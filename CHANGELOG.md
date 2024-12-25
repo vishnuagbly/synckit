@@ -1,3 +1,5 @@
 ## 0.0.1
 
-* TODO: Describe initial release.
+Contain important classes like [LocalStorage], [NetworkStorage], [StdObj], [StdObjParams], 
+[SyncManager], [Synced] etc.
+
