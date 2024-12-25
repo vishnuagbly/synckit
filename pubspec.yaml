@@ -1,7 +1,7 @@
 name: synckit
 description: "A Package to Sync data b/w Network and Local Storage."
 version: 0.0.1
-homepage:
+repository: https://github.com/vishnuagbly/synckit/
 
 environment:
   sdk: ^3.5.3
