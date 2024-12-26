@@ -87,7 +87,8 @@ separate object, which stores data in sorted manner, with log n complexities */
 mixin SyncedState<T> {
   late final SyncConfig<T> _params;
 
-  Ref<Dataset<T>> get ref;
+  // ignore: deprecated_member_use
+  NotifierProviderRef<Dataset<T>> get ref;
 
   Dataset<T> get state;
 
