@@ -1,6 +1,6 @@
 name: synckit
 description: "A Package to Sync data b/w Network and Local Storage."
-version: 0.1.0
+version: 0.2.0
 repository: https://github.com/vishnuagbly/synckit/
 
 environment:
@@ -11,9 +11,9 @@ dependencies:
   flutter:
     sdk: flutter
   cloud_firestore: ^5.6.0
-  hive_flutter: ^1.1.0
   fast_immutable_collections: ^11.0.0
   flutter_riverpod: ^2.6.1
+  hive_ce_flutter: ^2.1.0
 
 dev_dependencies:
   flutter_test:
