@@ -175,6 +175,7 @@ mixin SyncedState<T> {
       }
       if (entry.key != id) updatedStateEntries.add(entry);
     }
+    if (!added) updatedStateEntries.add(MapEntry(id, value));
     state = IMap.fromEntries(updatedStateEntries);
   }
 
