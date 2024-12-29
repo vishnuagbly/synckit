@@ -1,3 +1,6 @@
+## 0.2.1
+Fixed a bug in [SyncedState]'s `update` method, with sorting enabled.
+
 ## 0.2.0
 [Breaking Change]: Replaced [hive_flutter] with [hive_ce_flutter].
 
