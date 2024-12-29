@@ -1,3 +1,7 @@
+## 0.2.2
+Fixed a bug in [SyncedState]'s `update` method, with sorting enabled, causing 
+the newly added last element in the sorted dataset, to not be visible in state.
+
 ## 0.2.1
 Fixed a bug in [SyncedState]'s `update` method, with sorting enabled.
 
