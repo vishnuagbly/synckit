@@ -173,7 +173,7 @@ mixin SyncedState<T> {
         added = true;
         updatedStateEntries.add(MapEntry(id, value));
       }
-      updatedStateEntries.add(entry);
+      if (entry.key != id) updatedStateEntries.add(entry);
     }
     state = IMap.fromEntries(updatedStateEntries);
   }
