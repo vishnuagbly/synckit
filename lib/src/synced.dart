@@ -179,5 +179,8 @@ mixin SyncedState<T> {
     state = IMap.fromEntries(updatedStateEntries);
   }
 
-  Future<void> clear() => _params.manager.clear();
+  Future<void> clear() async {
+    await _params.manager.clear();
+    state = Dataset<T>();
+  }
 }
