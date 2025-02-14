@@ -1,3 +1,6 @@
+## 0.2.3
+Fixed bug in [SyncedState]'s `clear` method, which now clears the state as well.
+
 ## 0.2.2
 Fixed a bug in [SyncedState]'s `update` method, with sorting enabled, causing 
 the newly added last element in the sorted dataset, to not be visible in state.
