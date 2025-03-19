@@ -104,6 +104,12 @@ mixin SyncedState<T> {
   }
 
   void _initialize() async {
+    await refresh();
+    await _params.initializeCallback?.call(state, this);
+    _params.completer.complete();
+  }
+
+  Future<void> refresh() async {
     await _params.manager.initialize();
     _setState(_params.manager.allFromStorage);
 
@@ -113,9 +119,6 @@ mixin SyncedState<T> {
     } catch (err) {
       log('err: $err', name: 'SyncObjNotifier');
     }
-
-    await _params.initializeCallback?.call(state, this);
-    _params.completer.complete();
   }
 
   Future<void> get waitForInitialization => _params.completer.future;
