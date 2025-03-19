@@ -1,3 +1,6 @@
+## 0.2.4
+Added new `refresh` method in [SyncedState].
+
 ## 0.2.3
 Fixed bug in [SyncedState]'s `clear` method, which now clears the state as well.
 
