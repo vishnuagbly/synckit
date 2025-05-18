@@ -1,3 +1,6 @@
+## 0.2.6
+Added new `copyWith` method to [StdObjParams].
+
 ## 0.2.5
 Removed flutter_riverpod dependency. This should not be a Breaking Change, since
 none of the functionality actually depended on flutter_riverpod.
