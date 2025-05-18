@@ -3,7 +3,6 @@ import 'dart:developer';
 
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'sync_manager.dart';
 
@@ -86,9 +85,6 @@ separate object, which stores data in sorted manner, with log n complexities */
 /// ```
 mixin SyncedState<T> {
   late final SyncConfig<T> _params;
-
-  // ignore: deprecated_member_use
-  NotifierProviderRef<Dataset<T>> get ref;
 
   Dataset<T> get state;
 
