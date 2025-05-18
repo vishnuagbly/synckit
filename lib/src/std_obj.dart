@@ -19,4 +19,16 @@ class StdObjParams<T> {
     required this.fromJson,
   })  : toJson = toJson ?? ((obj) => (obj as StdObj).toJson()),
         getId = getId ?? ((obj) => (obj as StdObj).id);
+
+  StdObjParams<T> copyWith({
+    ToJsonFn<T>? toJson,
+    GetIdFn<T>? getId,
+    FromJson<T>? fromJson,
+  }) {
+    return StdObjParams<T>(
+      toJson: toJson ?? this.toJson,
+      getId: getId ?? this.getId,
+      fromJson: fromJson ?? this.fromJson,
+    );
+  }
 }
