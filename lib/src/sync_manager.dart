@@ -10,10 +10,15 @@ class SyncManager<T> {
   final LocalStorage<T> storage;
   final NetworkStorage<T> network;
 
+  /// If true, whenever data is fetched from the network (`get all`), local storage
+  /// will be replaced with this data.
+  final bool syncLocalWithNetworkOnFetch;
+
   factory SyncManager.fromStdObj({
     required FromJson<T> fromJson,
     required LocalStorage<T> storage,
     required NetworkStorage<T> network,
+    bool syncLocalWithNetworkOnFetch = true,
   }) =>
       SyncManager(
         stdObjParams: StdObjParams(fromJson: fromJson),
@@ -25,11 +30,23 @@ class SyncManager<T> {
     required this.stdObjParams,
     required this.storage,
     required this.network,
+    this.syncLocalWithNetworkOnFetch = true,
   });
 
   Dataset<T> get allFromStorage => storage.getAll(stdObjParams);
 
   Future<Dataset<T>> get allFromNetwork => network.getAll(stdObjParams);
+
+  Future<Dataset<T>> get fetchAndSyncFromNetwork async {
+    final res = await allFromNetwork;
+
+    if (syncLocalWithNetworkOnFetch) {
+      await storage.clear();
+      await storage.update(res, stdObjParams);
+    }
+
+    return res;
+  }
 
   Future<void> update(IMap<String, T> data) async {
     /* It is important for "Network" call to be first, since if it fails there

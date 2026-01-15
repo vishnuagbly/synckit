@@ -110,7 +110,7 @@ mixin SyncedState<T> {
     _setState(_params.manager.allFromStorage);
 
     try {
-      final data = await _params.manager.allFromNetwork;
+      final data = await _params.manager.fetchAndSyncFromNetwork;
       _setState(data);
     } catch (err) {
       log('err: $err', name: 'SyncObjNotifier');
