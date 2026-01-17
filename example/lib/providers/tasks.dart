@@ -36,7 +36,6 @@ class Tasks extends _$Tasks with SyncedState<Task> {
         collectionBasedConfig: NetworkStorageCollectionBasedConfig(
           getAllEnabled: settings.getAllEnabled,
           maxGetAllDocs: settings.maxGetAllDocs,
-          defaultQuery: (query) => query.orderBy('createdAt', descending: true),
         ),
       );
     } else {

@@ -10,13 +10,20 @@ typedef QueryFn<T> = Query<T> Function(Query<T> colRef);
 class NetworkStorageCollectionBasedConfig<T> {
   final bool getAllEnabled;
   final int maxGetAllDocs;
-  final QueryFn<T>? defaultQuery;
+  final QueryFn<T>? _defaultQuery;
 
   const NetworkStorageCollectionBasedConfig({
     this.getAllEnabled = true,
     this.maxGetAllDocs = 10,
-    this.defaultQuery,
-  });
+    QueryFn<T>? defaultQuery,
+  }) : _defaultQuery = defaultQuery;
+
+  QueryFn<T> get defaultQuery =>
+      _defaultQuery ??
+      ((query) {
+        // By default, no filtering or ordering is applied.
+        return query;
+      });
 }
 
 class NetworkStorage<T> {
@@ -28,26 +35,26 @@ class NetworkStorage<T> {
   ///
   /// NOTE:- This might lead to higher read/write costs in Firestore.
   final bool collectionBased;
-  final NetworkStorageCollectionBasedConfig<T>? collectionBasedConfig;
+  final NetworkStorageCollectionBasedConfig<T> collectionBasedConfig;
 
   const NetworkStorage.disabled()
       : path = '',
         disabled = true,
         collectionBased = false,
-        collectionBasedConfig = null;
+        collectionBasedConfig = const NetworkStorageCollectionBasedConfig();
 
   const NetworkStorage(
     this.path, {
     this.disabled = false,
     this.collectionBased = false,
-    this.collectionBasedConfig,
+    this.collectionBasedConfig = const NetworkStorageCollectionBasedConfig(),
   });
 
   Future<IMap<String, T>> getAll(StdObjParams<T> params,
       [String? docPath]) async {
     _assertDisabled();
     if (collectionBased) {
-      if (!(collectionBasedConfig?.getAllEnabled ?? false)) {
+      if (!(collectionBasedConfig.getAllEnabled)) {
         throw PlatformException(
           code: 'GET_ALL_DISABLED',
           message:
@@ -88,27 +95,15 @@ class NetworkStorage<T> {
       );
     }
 
-    if (query == null && collectionBasedConfig?.defaultQuery == null) {
-      throw PlatformException(
-        code: 'NO_QUERY_PROVIDED',
-        message: 'No query function provided for collection-based storage.',
-        details:
-            'Currently we do not allow, by default, fetching all documents '
-            'from collection-based storage to avoid high read costs. '
-            'Please provide a query function to limit the number of documents '
-            'fetched.',
-      );
-    }
-
     Query<T> colRef =
         FirebaseFirestore.instance.collection(path).withConverter<T>(
               fromFirestore: (snap, _) => params.fromJson(snap.data()!),
               toFirestore: (obj, _) => params.toJson(obj),
             );
 
-    colRef = (query ?? collectionBasedConfig!.defaultQuery!)(colRef);
-    if (collectionBasedConfig!.maxGetAllDocs > 0) {
-      colRef = colRef.limit(collectionBasedConfig!.maxGetAllDocs);
+    colRef = (query ?? collectionBasedConfig.defaultQuery)(colRef);
+    if (collectionBasedConfig.maxGetAllDocs > 0) {
+      colRef = colRef.limit(collectionBasedConfig.maxGetAllDocs);
     }
 
     return colRef.get().then((querySnapshot) {
