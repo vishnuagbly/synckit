@@ -1,3 +1,6 @@
+## 0.3.1
+Fixed bug of `syncLocalWithNetworkOnFetch` not working.
+
 ## 0.3.0
 
 ### Breaking Changes
