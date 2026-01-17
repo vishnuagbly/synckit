@@ -3,7 +3,6 @@ import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/services.dart';
 
 import 'objects/std_obj.dart';
-import 'synced.dart';
 import 'utils.dart';
 
 typedef QueryFn<T> = Query<T> Function(Query<T> colRef);

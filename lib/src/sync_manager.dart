@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:synckit/src/objects/batch.dart';
 
 import 'local_storage.dart';
