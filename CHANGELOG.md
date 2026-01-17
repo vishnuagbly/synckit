@@ -1,3 +1,24 @@
+## 0.3.2
+
+### New Features
+
+#### Batch Operations Support
+Added support for batch operations to perform multiple updates/deletes in a single Firestore write batch, improving performance and ensuring atomicity.
+
+- **[SyncBatch]**: New class wrapping Firestore `WriteBatch` with a `Completer<void>` for async completion tracking.
+  - `batch`: The underlying Firestore `WriteBatch`.
+  - `completer`: A `Completer<void>` that completes when the batch is committed.
+  - `commit()`: Commits the batch and completes the completer.
+
+- **[SyncManager]**: Added batch operation methods:
+  - `batchUpdate(Dataset<T> data, SyncBatch syncBatch)`: Performs a batch update operation using the provided `SyncBatch`. Updates network first, waits for batch commit, then updates local storage.
+  - `batchRemove(Dataset<T> data, SyncBatch syncBatch)`: Performs a batch remove operation using the provided `SyncBatch`. Deletes from network first, waits for batch commit, then deletes from local storage.
+
+- **[SyncedState]**: Added batch operation methods:
+  - `batchUpdate(T value, SyncBatch batch)`: Queues a value update in the batch and updates local state immediately. **Note**: Call `batch.commit()` after all batch operations.
+  - `batchRemoveAll(Iterable<String> ids, SyncBatch batch)`: Queues removal of multiple items by IDs in the batch and updates local state immediately.
+---
+
 ## 0.3.1
 Fixed bug of `syncLocalWithNetworkOnFetch` not working.
 
