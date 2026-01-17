@@ -1,9 +1,10 @@
-import 'package:fast_immutable_collections/fast_immutable_collections.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:synckit/src/objects/batch.dart';
 
 import 'local_storage.dart';
 import 'network_storage.dart';
-import 'std_obj.dart';
-import 'synced.dart';
+import 'objects/std_obj.dart';
+import 'utils.dart';
 
 class SyncManager<T> {
   final StdObjParams<T> stdObjParams;
@@ -49,7 +50,7 @@ class SyncManager<T> {
     return res;
   }
 
-  Future<void> update(IMap<String, T> data) async {
+  Future<void> update(Dataset<T> data) async {
     /* It is important for "Network" call to be first, since if it fails there
     * is no point in adding it to storage, which will probably not fail, and
     * also we are using "Network" as the source of truth. */
@@ -57,11 +58,31 @@ class SyncManager<T> {
     await storage.update(data, stdObjParams);
   }
 
-  Future<void> remove(IMap<String, T> data) async {
+  Future<void> batchUpdate(Dataset<T> data, SyncBatch syncBatch) async {
+    /* It is important for "Network" call to be first, since if it fails there
+    * is no point in adding it to storage, which will probably not fail, and
+    * also we are using "Network" as the source of truth. */
+
+    network.writeBatchUpdate(syncBatch.batch, data, stdObjParams);
+    await syncBatch.completer.future;
+    await storage.update(data, stdObjParams);
+  }
+
+  Future<void> remove(Dataset<T> data) async {
     /* It is important for "Network" call to be first, since if it fails there
     * is no point in adding it to storage, which will probably not fail, and
     * also we are using "Network" as the source of truth. */
     await network.delete(data, stdObjParams);
+    await storage.delete(data, stdObjParams);
+  }
+
+  Future<void> batchRemove(Dataset<T> data, SyncBatch syncBatch) async {
+    /* It is important for "Network" call to be first, since if it fails there
+    * is no point in adding it to storage, which will probably not fail, and
+    * also we are using "Network" as the source of truth. */
+
+    network.writeBatchDelete(syncBatch.batch, data, stdObjParams);
+    await syncBatch.completer.future;
     await storage.delete(data, stdObjParams);
   }
 
