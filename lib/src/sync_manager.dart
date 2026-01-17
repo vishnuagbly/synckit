@@ -24,6 +24,7 @@ class SyncManager<T> {
         stdObjParams: StdObjParams(fromJson: fromJson),
         storage: storage,
         network: network,
+        syncLocalWithNetworkOnFetch: syncLocalWithNetworkOnFetch,
       );
 
   const SyncManager({
