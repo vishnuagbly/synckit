@@ -6,7 +6,7 @@ part of 'tasks.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$tasksHash() => r'8778e934cd3d4ff883a2e284981e6fc300b7de45';
+String _$tasksHash() => r'363e5759a2827d0ec0da64dd5f632dea2a7dc6e9';
 
 /// Example Riverpod provider demonstrating synckit usage.
 ///

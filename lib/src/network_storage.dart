@@ -61,8 +61,12 @@ class NetworkStorage<T> {
 
     try {
       final docRef = FirebaseFirestore.instance.doc(docPath ?? path);
-      return (await docRef.get())
-          .data()!
+      final data = (await docRef.get()).data();
+      if (data == null) {
+        return IMap<String, T>();
+      }
+
+      return data
           .map((key, value) => MapEntry(key, params.fromJson(value)))
           .toIMap();
     } catch (err) {

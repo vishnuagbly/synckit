@@ -84,7 +84,7 @@ separate object, which stores data in sorted manner, with log n complexities */
 /// }
 /// ```
 mixin SyncedState<T> {
-  late final SyncConfig<T> _params;
+  late SyncConfig<T> _params;
 
   Dataset<T> get state;
 

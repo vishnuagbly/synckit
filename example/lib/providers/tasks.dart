@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:synckit/synckit.dart';
 
 import '../objects/task.dart';
+import 'settings.dart';
 
 part 'tasks.g.dart';
 
@@ -22,25 +23,41 @@ part 'tasks.g.dart';
 /// ```
 @riverpod
 class Tasks extends _$Tasks with SyncedState<Task> {
-  /// Replace this with your actual user ID from authentication
-  static String? userId;
-
   @override
   Dataset<Task> build() {
+    final settings = ref.watch(collectionSettingsProvider);
+
+    final NetworkStorage<Task> network;
+    if (settings.enabled) {
+      // Collection-based mode: each task is a separate document
+      network = NetworkStorage(
+        'tasks',
+        collectionBased: true,
+        collectionBasedConfig: NetworkStorageCollectionBasedConfig(
+          getAllEnabled: settings.getAllEnabled,
+          maxGetAllDocs: settings.maxGetAllDocs,
+          defaultQuery: (query) => query.orderBy('createdAt', descending: true),
+        ),
+      );
+    } else {
+      // Document-based mode: all tasks in a single document
+      network = const NetworkStorage('data/tasks');
+    }
+
     final manager = SyncManager<Task>.fromStdObj(
       fromJson: Task.fromJson,
       storage: const LocalStorage('tasks'),
-      network: userId != null
-          ? NetworkStorage('users/$userId/data/tasks')
-          : const NetworkStorage.disabled(),
+      network: network,
     );
 
     return initialize(
       SyncConfig(
         manager: manager,
-        sortConfig: const SortConfig(
+        sortConfig: SortConfig(
           isSorted: true,
           ascending: false,
+          comparator: (a, b) =>
+              (a.updatedAt ?? a.createdAt).compareTo(b.updatedAt ?? b.createdAt),
         ),
       ),
     );
