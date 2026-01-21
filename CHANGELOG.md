@@ -1,3 +1,21 @@
+## 0.3.3
+
+### New Features
+
+#### Batch Clear Support
+Added `batchClear` method to perform clear operations within a Firestore write batch, complementing the existing `batchUpdate` and `batchRemove` operations.
+
+- **[NetworkStorage]**: Added `writeBatchClear(WriteBatch batch, [String? docPath])` method:
+  - For collection-based storage: fetches all documents and adds delete operations for each to the batch.
+  - For non-collection-based storage: adds a delete operation for the document at the given path.
+  - Note: This method is async as collection-based mode requires fetching document references.
+
+- **[SyncManager]**: Added `batchClear(SyncBatch syncBatch)` method that queues clear operations on the network batch, waits for batch commit, then clears local storage.
+
+- **[SyncedState]**: Added `batchClear(SyncBatch batch)` method that queues a clear operation in the batch and clears local state. **Note**: Call `batch.commit()` after all batch operations.
+
+---
+
 ## 0.3.2
 
 ### New Features

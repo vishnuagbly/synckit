@@ -263,6 +263,31 @@ class NetworkStorage<T> {
     return docRef.delete();
   }
 
+  /// Adds clear operations to the provided [WriteBatch].
+  ///
+  /// For collection-based storage, this fetches all documents and adds delete
+  /// operations for each to the batch.
+  /// For non-collection-based storage, this adds a delete operation for the
+  /// document at the given path.
+  ///
+  /// NOTE: This method is async for collection-based storage as it needs to
+  /// fetch document references before adding them to the batch.
+  Future<void> writeBatchClear(WriteBatch batch, [String? path]) async {
+    if (disabled) return;
+
+    if (collectionBased) {
+      final colRef = FirebaseFirestore.instance.collection(path ?? this.path);
+      final snapshot = await colRef.get();
+      for (final doc in snapshot.docs) {
+        batch.delete(doc.reference);
+      }
+      return;
+    }
+
+    final docRef = FirebaseFirestore.instance.doc(path ?? this.path);
+    batch.delete(docRef);
+  }
+
   void _assertDisabled() {
     if (disabled) throw PlatformException(code: 'SYNC_OBJ_NETWORK_DISABLED');
   }

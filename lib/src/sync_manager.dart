@@ -85,6 +85,16 @@ class SyncManager<T> {
     await storage.delete(data, stdObjParams);
   }
 
+  Future<void> batchClear(SyncBatch syncBatch) async {
+    /* It is important for "Network" call to be first, since if it fails there
+    * is no point in adding it to storage, which will probably not fail, and
+    * also we are using "Network" as the source of truth. */
+
+    await network.writeBatchClear(syncBatch.batch);
+    await syncBatch.completer.future;
+    await storage.clear();
+  }
+
   Future<void> clear() async {
     await network.clear();
     await storage.clear();

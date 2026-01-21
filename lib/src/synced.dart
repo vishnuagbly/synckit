@@ -153,4 +153,10 @@ mixin SyncedState<T> {
     await _params.manager.clear();
     state = Dataset<T>();
   }
+
+  /// NOTE: Make sure to call `batch.commit()` after calling this method.
+  Future<void> batchClear(SyncBatch batch) async {
+    await _params.manager.batchClear(batch);
+    state = Dataset<T>();
+  }
 }
