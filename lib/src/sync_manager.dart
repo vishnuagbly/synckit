@@ -101,4 +101,6 @@ class SyncManager<T> {
   }
 
   Future<void> initialize() => storage.initialize();
+
+  bool isInitialized() => storage.isInitialized;
 }

@@ -52,8 +52,14 @@ class LocalStorage<T> {
   Future<void> initialize() => _initialize(boxName);
 
   static Future<void> _initialize(String boxName) async {
-    if (Hive.isBoxOpen(boxName)) return;
+    if (_isInitialized(boxName)) return;
 
     await Hive.openBox<String>(boxName);
+  }
+
+  bool get isInitialized => _isInitialized(boxName);
+
+  static bool _isInitialized(String boxName) {
+    return Hive.isBoxOpen(boxName);
   }
 }

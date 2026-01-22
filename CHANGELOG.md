@@ -1,3 +1,6 @@
+## 0.3.4
+Added method `isInitialized` to both **[SyncManager]** and **[LocalStorage]** to check if they have been initialized.
+
 ## 0.3.3
 
 ### New Features
