@@ -59,6 +59,20 @@ mixin SyncedState<T> {
 
   Future<void> get waitForInitialization => _params.completer.future;
 
+  Future<Dataset<T>> getQueryFromNetwork(
+    QueryFn<T> queryFn, {
+    int? maxGetAllDocs,
+  }) async {
+    final data =
+        await _params.manager.getQueryFromNetwork(queryFn, maxGetAllDocs);
+    for (final entry in data.entries) {
+      if (!state.containsKey(entry.key)) {
+        _updateStateWithValue(entry.value);
+      }
+    }
+    return data;
+  }
+
   void _setState(Dataset<T> state) {
     this.state = _sort(state, _params.sortConfig);
   }

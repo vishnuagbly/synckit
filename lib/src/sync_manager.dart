@@ -49,6 +49,16 @@ class SyncManager<T> {
     return res;
   }
 
+  Future<Dataset<T>> getQueryFromNetwork(QueryFn<T> queryFn,
+      [int? maxGetAllDocs]) async {
+    final res = await network.getQuery(stdObjParams, queryFn, maxGetAllDocs);
+
+    if (syncLocalWithNetworkOnFetch) {
+      await storage.update(res, stdObjParams);
+    }
+    return res;
+  }
+
   Future<void> update(Dataset<T> data) async {
     /* It is important for "Network" call to be first, since if it fails there
     * is no point in adding it to storage, which will probably not fail, and

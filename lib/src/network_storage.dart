@@ -5,8 +5,6 @@ import 'package:flutter/services.dart';
 import 'objects/std_obj.dart';
 import 'utils.dart';
 
-typedef QueryFn<T> = Query<T> Function(Query<T> colRef);
-
 class NetworkStorageCollectionBasedConfig<T> {
   final bool getAllEnabled;
   final int maxGetAllDocs;
@@ -85,8 +83,11 @@ class NetworkStorage<T> {
   }
 
   /// Only enabled for collection-based storage.
+  ///
+  /// [maxGetAllDocs] limits the maximum number of documents to fetch.
+  /// If not provided, it defaults to the value in [collectionBasedConfig].
   Future<IMap<String, T>> getQuery(StdObjParams<T> params,
-      [QueryFn<T>? query]) {
+      [QueryFn<T>? query, int? maxGetAllDocs]) async {
     _assertDisabled();
     if (!collectionBased) {
       throw PlatformException(
@@ -102,8 +103,10 @@ class NetworkStorage<T> {
             );
 
     colRef = (query ?? collectionBasedConfig.defaultQuery)(colRef);
-    if (collectionBasedConfig.maxGetAllDocs > 0) {
-      colRef = colRef.limit(collectionBasedConfig.maxGetAllDocs);
+
+    maxGetAllDocs ??= collectionBasedConfig.maxGetAllDocs;
+    if (maxGetAllDocs > 0) {
+      colRef = colRef.limit(maxGetAllDocs);
     }
 
     return colRef.get().then((querySnapshot) {

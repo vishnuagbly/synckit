@@ -1,3 +1,18 @@
+## 0.3.5
+
+### New Features
+
+#### Custom Query Fetch Support
+Added `getQueryFromNetwork` method for fetching data from network using custom Firestore queries.
+
+- **[NetworkStorage]**: Enhanced `getQuery` method with optional `maxGetAllDocs` parameter to override the default limit per call.
+
+- **[SyncManager]**: Added `getQueryFromNetwork(QueryFn<T> queryFn, [int? maxGetAllDocs])` method that fetches data using a custom query and optionally syncs with local storage.
+
+- **[SyncedState]**: Added `getQueryFromNetwork(QueryFn<T> queryFn, {int? maxGetAllDocs})` method that fetches data using a custom query and updates state with new entries.
+
+---
+
 ## 0.3.4
 Added method `isInitialized` to both **[SyncManager]** and **[LocalStorage]** to check if they have been initialized.
 
