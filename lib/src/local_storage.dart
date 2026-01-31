@@ -8,8 +8,9 @@ import 'utils.dart';
 
 class LocalStorage<T> {
   final String boxName;
+  final Future<void> Function()? initializeCallback;
 
-  const LocalStorage(this.boxName);
+  const LocalStorage(this.boxName, {this.initializeCallback});
 
   @override
   int get hashCode => boxName.hashCode;
@@ -49,7 +50,10 @@ class LocalStorage<T> {
 
   Box<String> get box => Hive.box<String>(boxName);
 
-  Future<void> initialize() => _initialize(boxName);
+  Future<void> initialize() async {
+    await _initialize(boxName);
+    return initializeCallback?.call();
+  }
 
   static Future<void> _initialize(String boxName) async {
     if (_isInitialized(boxName)) return;

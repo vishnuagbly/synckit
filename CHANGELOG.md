@@ -1,3 +1,12 @@
+## 0.3.6
+
+### New Features
+
+- **[LocalStorage]**: Added `initializeCallback` parameter that accepts an optional `Future<void> Function()` to be called after Hive box initialization.
+- The `initialize()` method now calls the provided callback after completing the default initialization process.
+
+---
+
 ## 0.3.5
 
 ### New Features
