@@ -1,3 +1,6 @@
+## 0.3.8
+- **[SyncedState]** Added `stateOnly` option for `update` function, if set to true, the update will not be applied to local and network storage.
+
 ## 0.3.7
 
 ### New Features

@@ -130,9 +130,12 @@ mixin SyncedState<T> {
     state = updatedState.lock;
   }
 
-  Future<void> update(T value) async {
+  /// If `stateOnly` is true, the update will not be applied to local and network storage.
+  Future<void> update(T value, {bool stateOnly = false}) async {
     final data = _toDataset(value);
-    await _params.manager.update(data);
+    if (!stateOnly) {
+      await _params.manager.update(data);
+    }
     _updateStateWithValue(value);
   }
 
