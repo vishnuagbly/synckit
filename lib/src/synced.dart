@@ -47,7 +47,12 @@ mixin SyncedState<T> {
 
   Future<void> refresh() async {
     await _params.manager.initialize();
-    _setState(_params.manager.allFromStorage);
+
+    try {
+      _setState(_params.manager.allFromStorage);
+    } catch (err) {
+      log('err: $err', name: 'SyncObjNotifier');
+    }
 
     try {
       final data = await _params.manager.fetchAndSyncFromNetwork;

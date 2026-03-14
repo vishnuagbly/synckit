@@ -1,3 +1,13 @@
+## 0.3.7
+
+### New Features
+
+- **[LocalStorage]**: Added `LocalStorage.disabled()` constructor and `disabled` parameter, mirroring `NetworkStorage.disabled`. When disabled, read operations (`getAll`) throw `PlatformException` with code `SYNC_OBJ_LOCAL_DISABLED`, and write operations (`update`, `delete`, `clear`) and `initialize()` are no-ops. Use this for network-only sync with no local persistence.
+
+- **[SyncedState]**: `refresh()` now handles local read failure (e.g. when local storage is disabled) in the same way as network failure: a try/catch around `allFromStorage` sets state to empty on throw, then the existing try/catch around `fetchAndSyncFromNetwork` runs. Network-only setups work without special-casing in SyncManager.
+
+---
+
 ## 0.3.6
 
 ### New Features
