@@ -93,11 +93,13 @@ mixin SyncedState<T> {
     ).lock;
   }
 
-  Future<void> remove(String id) async => removeAll([id]);
+  Future<void> remove(String id, {bool stateOnly = false}) async => removeAll([id], stateOnly: stateOnly);
 
-  Future<void> removeAll(Iterable<String> ids) async {
+  Future<void> removeAll(Iterable<String> ids, {bool stateOnly = false}) async {
     _assertIdsExists(ids);
-    await _params.manager.remove(_idsDatasetFromState(ids));
+    if (!stateOnly) {
+      await _params.manager.remove(_idsDatasetFromState(ids));
+    }
     _removeStateIds(ids);
   }
 
@@ -171,8 +173,10 @@ mixin SyncedState<T> {
     state = IMap.fromEntries(updatedStateEntries);
   }
 
-  Future<void> clear() async {
-    await _params.manager.clear();
+  Future<void> clear({bool stateOnly = false}) async {
+    if (!stateOnly) {
+      await _params.manager.clear();
+    }
     state = Dataset<T>();
   }
 
