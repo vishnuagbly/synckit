@@ -34,7 +34,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1E1E2E),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('New Task', style: TextStyle(color: Colors.tealAccent)),
+        title:
+            const Text('New Task', style: TextStyle(color: Colors.tealAccent)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -62,7 +63,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            child:
+                const Text('Cancel', style: TextStyle(color: Colors.white54)),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.tealAccent),
@@ -76,7 +78,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Navigator.pop(context);
               }
             },
-            child: const Text('Add', style: TextStyle(color: Color(0xFF11111B))),
+            child:
+                const Text('Add', style: TextStyle(color: Color(0xFF11111B))),
           ),
         ],
       ),
@@ -92,7 +95,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1E1E2E),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Edit Task', style: TextStyle(color: Colors.cyanAccent)),
+        title:
+            const Text('Edit Task', style: TextStyle(color: Colors.cyanAccent)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -120,7 +124,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            child:
+                const Text('Cancel', style: TextStyle(color: Colors.white54)),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.cyanAccent),
@@ -136,7 +141,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Navigator.pop(context);
               }
             },
-            child: const Text('Save', style: TextStyle(color: Color(0xFF11111B))),
+            child:
+                const Text('Save', style: TextStyle(color: Color(0xFF11111B))),
           ),
         ],
       ),
@@ -165,7 +171,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     color: Colors.orangeAccent.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.settings, color: Colors.orangeAccent, size: 18),
+                  child: const Icon(Icons.settings,
+                      color: Colors.orangeAccent, size: 18),
                 ),
                 const SizedBox(width: 10),
                 const Text('Collection Config',
@@ -196,7 +203,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       const SizedBox(height: 12),
                       _ConfigSwitchTile(
                         title: 'getAllEnabled',
-                        subtitle: 'Allow fetching all documents from collection',
+                        subtitle:
+                            'Allow fetching all documents from collection',
                         value: currentSettings.getAllEnabled,
                         onChanged: (val) {
                           ref
@@ -319,7 +327,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Close', style: TextStyle(color: Colors.white54)),
+                child: const Text('Close',
+                    style: TextStyle(color: Colors.white54)),
               ),
             ],
           );
@@ -379,7 +388,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   onChanged: (_) => ref
                       .read(collectionSettingsProvider.notifier)
                       .toggleCollectionBased(),
-                  activeColor: Colors.orangeAccent,
+                  activeThumbColor: Colors.orangeAccent,
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
               ],
@@ -395,8 +404,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: IconButton(
                 icon: const Icon(Icons.tune, color: Colors.orangeAccent),
                 tooltip: 'Collection config',
-                onPressed:
-                    collectionSettings.enabled ? _showCollectionConfigDialog : null,
+                onPressed: collectionSettings.enabled
+                    ? _showCollectionConfigDialog
+                    : null,
               ),
             ),
           ),
@@ -634,7 +644,7 @@ class _ConfigSwitchTile extends StatelessWidget {
         Switch(
           value: value,
           onChanged: onChanged,
-          activeColor: Colors.tealAccent,
+          activeThumbColor: Colors.tealAccent,
         ),
       ],
     );
