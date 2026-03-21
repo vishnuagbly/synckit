@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/services.dart';
@@ -48,8 +50,45 @@ class NetworkStorage<T> {
     this.collectionBasedConfig = const NetworkStorageCollectionBasedConfig(),
   });
 
+  Stream<Dataset<T>> streamAll(StdObjParams<T> params) {
+    _assertDisabled();
+    if (collectionBased) {
+      if (!(collectionBasedConfig.getAllEnabled)) {
+        throw PlatformException(
+          code: 'GET_ALL_DISABLED',
+          message:
+              'Listening to all objects is only supported for collection-based '
+              'storage when getAllEnabled is true in config.',
+          details: 'Path: $path',
+        );
+      }
+      return streamQuery(params);
+    }
+
+    final docRef = FirebaseFirestore.instance.doc(path);
+    return docRef
+        .snapshots()
+        .map((snapshot) => _docSnapshotToDataset(snapshot, params));
+  }
+
+  Stream<Dataset<T>> streamQuery(StdObjParams<T> params,
+      [QueryFn<T>? query, int? maxGetAllDocs]) {
+    _assertDisabled();
+    if (!collectionBased) {
+      throw PlatformException(
+        code: 'COLLECTION_BASED_STORAGE_DISABLED',
+        message: 'Listening a query is only supported for collection-based '
+            'storage.',
+      );
+    }
+
+    return _genColRef(params, query, maxGetAllDocs)
+        .snapshots()
+        .map(_querySnapshotToDataset);
+  }
+
   Future<IMap<String, T>> getAll(StdObjParams<T> params,
-      [String? docPath]) async {
+      [QueryFn<T>? query, String? docPath]) async {
     _assertDisabled();
     if (collectionBased) {
       if (!(collectionBasedConfig.getAllEnabled)) {
@@ -66,14 +105,7 @@ class NetworkStorage<T> {
 
     try {
       final docRef = FirebaseFirestore.instance.doc(docPath ?? path);
-      final data = (await docRef.get()).data();
-      if (data == null) {
-        return IMap<String, T>();
-      }
-
-      return data
-          .map((key, value) => MapEntry(key, params.fromJson(value)))
-          .toIMap();
+      return _docSnapshotToDataset((await docRef.get()), params);
     } catch (err) {
       throw PlatformException(
         code: 'CANNOT_FETCH',
@@ -82,11 +114,23 @@ class NetworkStorage<T> {
     }
   }
 
+  Dataset<T> _docSnapshotToDataset(
+      DocumentSnapshot<Map<String, dynamic>> snapshot, StdObjParams<T> params) {
+    final data = snapshot.data();
+    if (data == null) {
+      return IMap<String, T>();
+    }
+
+    return data
+        .map((key, value) => MapEntry(key, params.fromJson(value)))
+        .toIMap();
+  }
+
   /// Only enabled for collection-based storage.
   ///
   /// [maxGetAllDocs] limits the maximum number of documents to fetch.
   /// If not provided, it defaults to the value in [collectionBasedConfig].
-  Future<IMap<String, T>> getQuery(StdObjParams<T> params,
+  Future<Dataset<T>> getQuery(StdObjParams<T> params,
       [QueryFn<T>? query, int? maxGetAllDocs]) async {
     _assertDisabled();
     if (!collectionBased) {
@@ -96,6 +140,13 @@ class NetworkStorage<T> {
       );
     }
 
+    return _genColRef(params, query, maxGetAllDocs)
+        .get()
+        .then(_querySnapshotToDataset);
+  }
+
+  Query<T> _genColRef(StdObjParams<T> params,
+      [QueryFn<T>? query, int? maxGetAllDocs]) {
     Query<T> colRef =
         FirebaseFirestore.instance.collection(path).withConverter<T>(
               fromFirestore: (snap, _) => params.fromJson(snap.data()!),
@@ -109,12 +160,14 @@ class NetworkStorage<T> {
       colRef = colRef.limit(maxGetAllDocs);
     }
 
-    return colRef.get().then((querySnapshot) {
-      final dataMap = {
-        for (final doc in querySnapshot.docs) doc.id: doc.data(),
-      };
-      return dataMap.toIMap();
-    });
+    return colRef;
+  }
+
+  Dataset<T> _querySnapshotToDataset(QuerySnapshot<T> snapshot) {
+    final dataMap = {
+      for (final doc in snapshot.docs) doc.id: doc.data(),
+    };
+    return dataMap.toIMap();
   }
 
   Future<void> update(Dataset<T> data, StdObjParams<T> params,

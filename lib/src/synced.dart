@@ -25,6 +25,7 @@ separate object, which stores data in sorted manner, with log n complexities */
 /// ```
 mixin SyncedState<T> {
   late SyncConfig<T> _params;
+  final List<StreamSubscription<Dataset<T>>> subscriptions = [];
 
   Dataset<T> get state;
 
@@ -64,17 +65,43 @@ mixin SyncedState<T> {
 
   Future<void> get waitForInitialization => _params.completer.future;
 
+  /// Make sure to cancel the returned subscription in `dispose` method to avoid
+  /// memory leaks.
+  /// Note:- You can also simply call [dispose] method to cancel all the active
+  /// subscriptions at once.
+  StreamSubscription<Dataset<T>> keepAllInSync() {
+    return _params.manager.listenAllFromNetwork((data) {
+      _setState(data);
+    });
+  }
+
+  /// Make sure to cancel the returned subscription in `dispose` method to avoid
+  /// memory leaks.
+  /// Note:- You can also simply call [dispose] method to cancel all the active
+  /// subscriptions at once.
+  StreamSubscription<Dataset<T>> keepQueryInSync(QueryFn<T> queryFn,
+      {int? maxGetAllDocs}) {
+    return _params.manager.listenQueryFromNetwork(
+      queryFn,
+      maxGetAllDocs: maxGetAllDocs,
+      onData: (data) => _updateStateWithDataset(data),
+    );
+  }
+
+  /// Call this method in the `dispose` method of the notifier to cancel all the
+  /// active subscriptions at once and avoid memory leaks.
+  Future<void> dispose() async {
+    await Future.wait(subscriptions.map((sub) => sub.cancel()));
+    subscriptions.clear();
+  }
+
   Future<Dataset<T>> getQueryFromNetwork(
     QueryFn<T> queryFn, {
     int? maxGetAllDocs,
   }) async {
     final data =
         await _params.manager.getQueryFromNetwork(queryFn, maxGetAllDocs);
-    for (final entry in data.entries) {
-      if (!state.containsKey(entry.key)) {
-        _updateStateWithValue(entry.value);
-      }
-    }
+    _updateStateWithDataset(data);
     return data;
   }
 
@@ -93,7 +120,8 @@ mixin SyncedState<T> {
     ).lock;
   }
 
-  Future<void> remove(String id, {bool stateOnly = false}) async => removeAll([id], stateOnly: stateOnly);
+  Future<void> remove(String id, {bool stateOnly = false}) async =>
+      removeAll([id], stateOnly: stateOnly);
 
   Future<void> removeAll(Iterable<String> ids, {bool stateOnly = false}) async {
     _assertIdsExists(ids);
@@ -151,6 +179,12 @@ mixin SyncedState<T> {
   Dataset<T> _toDataset(T value) {
     final id = _params.manager.stdObjParams.getId(value);
     return {id: value}.lock;
+  }
+
+  void _updateStateWithDataset(Dataset<T> dataset) {
+    for (final entry in dataset.entries) {
+      _updateStateWithValue(entry.value);
+    }
   }
 
   void _updateStateWithValue(T value) {

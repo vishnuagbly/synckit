@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:synckit/src/objects/batch.dart';
 
 import 'local_storage.dart';
@@ -47,6 +49,44 @@ class SyncManager<T> {
     }
 
     return res;
+  }
+
+  /// This will keep local storage in sync with the network whenever there is a
+  /// change in the network data. If `syncLocalWithNetworkOnFetch` is true,
+  /// local storage will be updated with the new data whenever there is a change
+  /// in the network data. Otherwise, local storage will not be updated, but the
+  /// [onData] will still be called whenever there is a change in the network data.
+  ///
+  /// Note:- Local Storage data will be cleared then updated with the new data
+  /// whenever there is a change in the network data, so if you don't want that,
+  /// in that case, you can set `syncLocalWithNetworkOnFetch` to false and
+  /// handle the local storage update in the listener.
+  StreamSubscription<Dataset<T>> listenAllFromNetwork(
+      [Function(Dataset<T>)? onData]) {
+    final stream = network.streamAll(stdObjParams);
+    return stream.listen((res) async {
+      if (syncLocalWithNetworkOnFetch) {
+        await storage.clear();
+        await storage.update(res, stdObjParams);
+      }
+      onData?.call(res);
+    });
+  }
+
+  /// This will keep local storage in sync with the network whenever there is a
+  /// change in the network data that matches the query. If
+  /// `syncLocalWithNetworkOnFetch` is true, local storage will be updated as
+  /// well.
+  /// [onData] will be called always.
+  StreamSubscription<Dataset<T>> listenQueryFromNetwork(QueryFn<T> queryFn,
+      {int? maxGetAllDocs, Function(Dataset<T>)? onData}) {
+    final stream = network.streamQuery(stdObjParams, queryFn, maxGetAllDocs);
+    return stream.listen((res) async {
+      if (syncLocalWithNetworkOnFetch) {
+        await storage.update(res, stdObjParams);
+      }
+      onData?.call(res);
+    });
   }
 
   Future<Dataset<T>> getQueryFromNetwork(QueryFn<T> queryFn,

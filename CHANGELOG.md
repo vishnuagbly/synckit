@@ -1,3 +1,12 @@
+## 0.3.10
+
+### New Features
+
+- **[NetworkStorage]**: Added `streamAll` and `streamQuery` methods to support real-time data synchronization from Firestore.
+- **[SyncManager]**: Added `listenAllFromNetwork` and `listenQueryFromNetwork` methods to subscribe to network changes and automatically synchronize with local storage.
+- **[SyncedState]**: Added `keepAllInSync` and `keepQueryInSync` methods to simplify real-time UI updates from your state notifier.
+- **[SyncedState]**: Added `dispose` method to cancel all active subscriptions and prevent memory leaks.
+
 ## 0.3.9
 - **[SyncedState]** Added `stateOnly` option for `remove` and `clear` function, if set to true, the update will not be applied to local and network storage.
 
