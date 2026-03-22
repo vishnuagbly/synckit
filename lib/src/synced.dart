@@ -25,7 +25,7 @@ separate object, which stores data in sorted manner, with log n complexities */
 /// ```
 mixin SyncedState<T> {
   late SyncConfig<T> _params;
-  final List<StreamSubscription<Dataset<T>>> subscriptions = [];
+  final List<StreamSubscription<Dataset<T>>> _subscriptions = [];
 
   Dataset<T> get state;
 
@@ -70,9 +70,9 @@ mixin SyncedState<T> {
   /// Note:- You can also simply call [dispose] method to cancel all the active
   /// subscriptions at once.
   StreamSubscription<Dataset<T>> keepAllInSync() {
-    return _params.manager.listenAllFromNetwork((data) {
+    return _addSubscription(_params.manager.listenAllFromNetwork((data) {
       _setState(data);
-    });
+    }));
   }
 
   /// Make sure to cancel the returned subscription in `dispose` method to avoid
@@ -81,18 +81,24 @@ mixin SyncedState<T> {
   /// subscriptions at once.
   StreamSubscription<Dataset<T>> keepQueryInSync(QueryFn<T> queryFn,
       {int? maxGetAllDocs}) {
-    return _params.manager.listenQueryFromNetwork(
+    return _addSubscription(_params.manager.listenQueryFromNetwork(
       queryFn,
       maxGetAllDocs: maxGetAllDocs,
       onData: (data) => _updateStateWithDataset(data),
-    );
+    ));
+  }
+
+  StreamSubscription<Dataset<T>> _addSubscription(
+      StreamSubscription<Dataset<T>> subscription) {
+    _subscriptions.add(subscription);
+    return subscription;
   }
 
   /// Call this method in the `dispose` method of the notifier to cancel all the
   /// active subscriptions at once and avoid memory leaks.
   Future<void> dispose() async {
-    await Future.wait(subscriptions.map((sub) => sub.cancel()));
-    subscriptions.clear();
+    await Future.wait(_subscriptions.map((sub) => sub.cancel()));
+    _subscriptions.clear();
   }
 
   Future<Dataset<T>> getQueryFromNetwork(
