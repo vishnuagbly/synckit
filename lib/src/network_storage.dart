@@ -37,16 +37,22 @@ class NetworkStorage<T> {
   final bool collectionBased;
   final NetworkStorageCollectionBasedConfig<T> collectionBasedConfig;
 
+  /// Use this to filter out data from the stream, that should not be synced
+  /// to the network.
+  final Dataset<T> Function(Dataset<T> data)? writeRules;
+
   const NetworkStorage.disabled()
       : path = '',
         disabled = true,
         collectionBased = false,
+        writeRules = null,
         collectionBasedConfig = const NetworkStorageCollectionBasedConfig();
 
   const NetworkStorage(
     this.path, {
     this.disabled = false,
     this.collectionBased = false,
+    this.writeRules,
     this.collectionBasedConfig = const NetworkStorageCollectionBasedConfig(),
   });
 
@@ -173,6 +179,7 @@ class NetworkStorage<T> {
   Future<void> update(Dataset<T> data, StdObjParams<T> params,
       [String? docPath]) async {
     if (disabled) return;
+    data = _applyWriteRules(data);
 
     if (collectionBased) {
       final batch = FirebaseFirestore.instance.batch();
@@ -189,6 +196,7 @@ class NetworkStorage<T> {
       Transaction transaction, Dataset<T> data, StdObjParams<T> params,
       [String? docPath]) {
     if (disabled) return transaction;
+    data = _applyWriteRules(data);
 
     if (collectionBased) {
       final colRef = FirebaseFirestore.instance.collection(docPath ?? path);
@@ -209,6 +217,7 @@ class NetworkStorage<T> {
       WriteBatch batch, Dataset<T> data, StdObjParams<T> params,
       [String? docPath]) {
     if (disabled) return;
+    data = _applyWriteRules(data);
 
     if (collectionBased) {
       final colRef = FirebaseFirestore.instance.collection(docPath ?? path);
@@ -222,6 +231,28 @@ class NetworkStorage<T> {
     final (docRef, setData, setOptions) =
         _getUpdateParams(data, params, docPath);
     batch.set(docRef, setData, setOptions);
+  }
+
+  Dataset<T> _applyWriteRules(Dataset<T> data) {
+    _assertNotEmptyData(data);
+    if (writeRules == null) return data;
+    data = writeRules!(data);
+    if (data.isEmpty) {
+      throw PlatformException(
+        code: 'WRITE_RULES_FILTERED_ALL_DATA',
+        message: 'All data was filtered out by write rules.',
+      );
+    }
+    return data;
+  }
+
+  void _assertNotEmptyData(Dataset<T> data) {
+    if (data.isEmpty) {
+      throw PlatformException(
+        code: 'NO_DATA_TO_WRITE',
+        message: 'Attempted to write an empty dataset to the network.',
+      );
+    }
   }
 
   (

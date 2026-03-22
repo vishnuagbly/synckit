@@ -1,3 +1,6 @@
+## 0.3.11
+- **[NetworkStorage]**: Added `writeRules` parameter to `NetworkStorage`. Allowing users to apply custom rules, to filter out records, that should not be synced to Network Storage.
+
 ## 0.3.10+1
 ### Bug Fixes
 - **[SyncedState]**: Fixed a bug in `SyncedState` where subscriptions were not being added to the `_subscriptions` list, causing them to not be properly disposed and leading to potential memory leaks.
