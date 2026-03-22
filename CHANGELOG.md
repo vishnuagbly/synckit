@@ -1,3 +1,6 @@
+## 0.3.11+1
+- **[NetworkStorage]**: Fixed a bug in `writeRules` where on executing `writeRuels` it was throwing error, instead now it will only log.
+
 ## 0.3.11
 - **[NetworkStorage]**: Added `writeRules` parameter to `NetworkStorage`. Allowing users to apply custom rules, to filter out records, that should not be synced to Network Storage.
 

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
@@ -180,6 +181,7 @@ class NetworkStorage<T> {
       [String? docPath]) async {
     if (disabled) return;
     data = _applyWriteRules(data);
+    if (data.isEmpty) return;
 
     if (collectionBased) {
       final batch = FirebaseFirestore.instance.batch();
@@ -197,6 +199,7 @@ class NetworkStorage<T> {
       [String? docPath]) {
     if (disabled) return transaction;
     data = _applyWriteRules(data);
+    if (data.isEmpty) return transaction;
 
     if (collectionBased) {
       final colRef = FirebaseFirestore.instance.collection(docPath ?? path);
@@ -218,6 +221,7 @@ class NetworkStorage<T> {
       [String? docPath]) {
     if (disabled) return;
     data = _applyWriteRules(data);
+    if (data.isEmpty) return;
 
     if (collectionBased) {
       final colRef = FirebaseFirestore.instance.collection(docPath ?? path);
@@ -234,24 +238,24 @@ class NetworkStorage<T> {
   }
 
   Dataset<T> _applyWriteRules(Dataset<T> data) {
-    _assertNotEmptyData(data);
-    if (writeRules == null) return data;
+    _logIfEmptyData(data);
+    if (writeRules == null || data.isEmpty) return data;
     data = writeRules!(data);
     if (data.isEmpty) {
-      throw PlatformException(
-        code: 'WRITE_RULES_FILTERED_ALL_DATA',
-        message: 'All data was filtered out by write rules.',
-      );
+      log(
+          'Warning: All data was filtered out by writeRules for NetworkStorage at path: $path. '
+          'This might be intentional, but it could also indicate an issue with the write rules.',
+          name: 'NetworkStorage');
     }
     return data;
   }
 
-  void _assertNotEmptyData(Dataset<T> data) {
+  void _logIfEmptyData(Dataset<T> data) {
     if (data.isEmpty) {
-      throw PlatformException(
-        code: 'NO_DATA_TO_WRITE',
-        message: 'Attempted to write an empty dataset to the network.',
-      );
+      log(
+          'Warning: Attempting to write an empty dataset to NetworkStorage at path: $path. '
+          'This might be intentional, but it could also indicate an issue with the data.',
+          name: 'NetworkStorage');
     }
   }
 
