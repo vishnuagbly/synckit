@@ -152,7 +152,7 @@ class NetworkStorage<T> {
     }
 
     try {
-      return _genColRef(params, query, maxGetAllDocs)
+      return await _genColRef(params, query, maxGetAllDocs)
           .get(getOptions ?? defaultGetOptions)
           .then(_querySnapshotToDataset);
     } catch (err) {

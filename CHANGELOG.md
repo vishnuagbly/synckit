@@ -1,3 +1,6 @@
+## 0.3.15+1
+Bug fix on the `FirebaseException` handling.
+
 ## 0.3.15
 ### Improvements
 - **[NetworkStorage]**: Enhanced `getQuery` to catch `FirebaseException` with code `unavailable` and throw a `PlatformException` with code `CONN_FAILURE` for better connection failure handling.
