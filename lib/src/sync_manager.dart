@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:synckit/src/objects/batch.dart';
 
 import 'local_storage.dart';
@@ -107,8 +108,9 @@ class SyncManager<T> {
   }
 
   Future<Dataset<T>> getQueryFromNetwork(QueryFn<T> queryFn,
-      [int? maxGetAllDocs]) async {
-    final res = await network.getQuery(stdObjParams, queryFn, maxGetAllDocs);
+      [int? maxGetAllDocs, GetOptions? getOptions]) async {
+    final res = await network.getQuery(
+        stdObjParams, queryFn, maxGetAllDocs, getOptions);
 
     if (syncLocalWithNetworkOnFetch) {
       await storage.update(res, stdObjParams);

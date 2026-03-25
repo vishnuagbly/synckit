@@ -37,6 +37,7 @@ class NetworkStorage<T> {
   /// NOTE:- This might lead to higher read/write costs in Firestore.
   final bool collectionBased;
   final NetworkStorageCollectionBasedConfig<T> collectionBasedConfig;
+  final GetOptions? defaultGetOptions;
 
   /// Use this to filter out data from the stream, that should not be synced
   /// to the network.
@@ -47,6 +48,7 @@ class NetworkStorage<T> {
         disabled = true,
         collectionBased = false,
         writeRules = null,
+        defaultGetOptions = null,
         collectionBasedConfig = const NetworkStorageCollectionBasedConfig();
 
   const NetworkStorage(
@@ -55,6 +57,7 @@ class NetworkStorage<T> {
     this.collectionBased = false,
     this.writeRules,
     this.collectionBasedConfig = const NetworkStorageCollectionBasedConfig(),
+    this.defaultGetOptions = const GetOptions(source: Source.server),
   });
 
   Stream<Dataset<T>> streamAll(StdObjParams<T> params) {
@@ -95,7 +98,7 @@ class NetworkStorage<T> {
   }
 
   Future<IMap<String, T>> getAll(StdObjParams<T> params,
-      [QueryFn<T>? query, String? docPath]) async {
+      [QueryFn<T>? query, String? docPath, GetOptions? getOptions]) async {
     _assertDisabled();
     if (collectionBased) {
       if (!(collectionBasedConfig.getAllEnabled)) {
@@ -107,12 +110,13 @@ class NetworkStorage<T> {
         );
       }
 
-      return getQuery(params);
+      return getQuery(params, query, null, getOptions);
     }
 
     try {
       final docRef = FirebaseFirestore.instance.doc(docPath ?? path);
-      return _docSnapshotToDataset((await docRef.get()), params);
+      return _docSnapshotToDataset(
+          (await docRef.get(getOptions ?? defaultGetOptions)), params);
     } catch (err) {
       throw PlatformException(
         code: 'CANNOT_FETCH',
@@ -138,7 +142,7 @@ class NetworkStorage<T> {
   /// [maxGetAllDocs] limits the maximum number of documents to fetch.
   /// If not provided, it defaults to the value in [collectionBasedConfig].
   Future<Dataset<T>> getQuery(StdObjParams<T> params,
-      [QueryFn<T>? query, int? maxGetAllDocs]) async {
+      [QueryFn<T>? query, int? maxGetAllDocs, GetOptions? getOptions]) async {
     _assertDisabled();
     if (!collectionBased) {
       throw PlatformException(
@@ -148,7 +152,7 @@ class NetworkStorage<T> {
     }
 
     return _genColRef(params, query, maxGetAllDocs)
-        .get()
+        .get(getOptions ?? defaultGetOptions)
         .then(_querySnapshotToDataset);
   }
 

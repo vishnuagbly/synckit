@@ -1,3 +1,10 @@
+## 0.3.14
+### New Features
+- **[NetworkStorage]**: Added `defaultGetOptions` to `NetworkStorage` to control the default Firestore `Source` (server/cache) for fetch operations. Defaults to `Source.server`.
+- **[NetworkStorage]**: Updated `getAll` and `getQuery` to accept custom `GetOptions`.
+- **[SyncManager]**: Updated `getQueryFromNetwork` to support passing custom `GetOptions`.
+- **[SyncedState]**: Updated `getQueryFromNetwork` to support passing custom `GetOptions`.
+
 ## 0.3.13
 ### New Features
 - **[History]**: Made `History` object immutable and added `updateLastSyncWithNetworkFetchTime()` method that returns a new `History` instance.

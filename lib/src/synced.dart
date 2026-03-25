@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/services.dart';
 import 'package:synckit/src/utils.dart';
@@ -113,9 +114,10 @@ mixin SyncedState<T> {
   Future<Dataset<T>> getQueryFromNetwork(
     QueryFn<T> queryFn, {
     int? maxGetAllDocs,
+    GetOptions? getOptions,
   }) async {
     final data =
-        await _params.manager.getQueryFromNetwork(queryFn, maxGetAllDocs);
+        await _params.manager.getQueryFromNetwork(queryFn, maxGetAllDocs, getOptions);
     _updateStateWithDataset(data);
     _updateHistory(_history.updateLastSyncWithNetworkFetchTime());
     return data;
