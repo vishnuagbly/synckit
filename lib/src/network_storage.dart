@@ -151,9 +151,21 @@ class NetworkStorage<T> {
       );
     }
 
-    return _genColRef(params, query, maxGetAllDocs)
-        .get(getOptions ?? defaultGetOptions)
-        .then(_querySnapshotToDataset);
+    try {
+      return _genColRef(params, query, maxGetAllDocs)
+          .get(getOptions ?? defaultGetOptions)
+          .then(_querySnapshotToDataset);
+    } catch (err) {
+      if (err is FirebaseException) {
+        if (err.code == 'unavailable') {
+          throw PlatformException(
+              code: 'CONN_FAILURE',
+              message:
+                  'Cannot connect to our servers. Try checking your internet connection.');
+        }
+      }
+      rethrow;
+    }
   }
 
   Query<T> _genColRef(StdObjParams<T> params,

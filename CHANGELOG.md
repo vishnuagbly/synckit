@@ -1,3 +1,7 @@
+## 0.3.15
+### Improvements
+- **[NetworkStorage]**: Enhanced `getQuery` to catch `FirebaseException` with code `unavailable` and throw a `PlatformException` with code `CONN_FAILURE` for better connection failure handling.
+
 ## 0.3.14
 ### New Features
 - **[NetworkStorage]**: Added `defaultGetOptions` to `NetworkStorage` to control the default Firestore `Source` (server/cache) for fetch operations. Defaults to `Source.server`.
