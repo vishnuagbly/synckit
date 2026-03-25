@@ -59,7 +59,9 @@ class SyncManager<T> {
     final res = await allFromNetwork;
 
     if (syncLocalWithNetworkOnFetch) {
-      await storage.clear();
+      if (!network.collectionBased) {
+        await storage.clear();
+      }
       await storage.update(res, stdObjParams);
       _updateHistory(_history.updateLastSyncWithNetworkFetchTime());
     }

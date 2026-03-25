@@ -62,7 +62,7 @@ mixin SyncedState<T> {
 
     try {
       final data = await _params.manager.fetchAndSyncFromNetwork;
-      _setState(data);
+      _setOrUpdateState(data);
       _updateHistory(_history.updateLastSyncWithNetworkFetchTime());
     } catch (err) {
       log('err: $err', name: 'SyncObjNotifier');
@@ -77,7 +77,7 @@ mixin SyncedState<T> {
   /// subscriptions at once.
   StreamSubscription<Dataset<T>> keepAllInSync() {
     return _addSubscription(_params.manager.listenAllFromNetwork((data) {
-      _setState(data);
+      _setOrUpdateState(data);
       _updateHistory(_history.updateLastSyncWithNetworkFetchTime());
     }));
   }
@@ -126,6 +126,14 @@ mixin SyncedState<T> {
   void _updateHistory(History history) {
     _history = history;
     _params.onHistoryUpdate?.call(_history);
+  }
+
+  void _setOrUpdateState(Dataset<T> state) {
+    if (!_params.manager.network.collectionBased) {
+      _setState(state);
+    } else {
+      _updateStateWithDataset(state);
+    }
   }
 
   void _setState(Dataset<T> state) {

@@ -1,3 +1,10 @@
+## 0.3.16
+
+### Improvements
+- **[SyncManager]**: Modified `fetchAndSyncFromNetwork` to skip `storage.clear()` when `collectionBased` is enabled. 
+
+- **[SyncedState]**: Updated `refresh` and `keepAllInSync` to use a new `_setOrUpdateState` method. This ensures that for `collectionBased` storage, the state is updated incrementally instead of being completely overwritten.
+
 ## 0.3.15+1
 Bug fix on the `FirebaseException` handling.
 
