@@ -1,3 +1,10 @@
+## 0.3.13
+### New Features
+- **[History]**: Made `History` object immutable and added `updateLastSyncWithNetworkFetchTime()` method that returns a new `History` instance.
+- **[SyncConfig]**: Added `onHistoryUpdate` callback that is triggered whenever the history is updated in `SyncedState`.
+- **[SyncedState]**: Updated to use the immutable `History` pattern and invoke `onHistoryUpdate` callback.
+- **[SyncManager]**: Updated to use the immutable `History` pattern and added `onHistoryUpdate` callback.
+
 ## 0.3.12
 ### New Features
 - **[History]**: Added a new `History` object with `lastSyncWithNetworkFetchTime` and `updateLastSyncWithNetworkFetchTime()` to track the latest successful network fetch sync time.

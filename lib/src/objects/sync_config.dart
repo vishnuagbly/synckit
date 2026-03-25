@@ -3,6 +3,7 @@ import 'dart:async';
 import '../sync_manager.dart';
 import '../synced.dart';
 import '../utils.dart';
+import 'history.dart';
 import 'sort_config.dart';
 
 class SyncConfig<T> {
@@ -10,6 +11,7 @@ class SyncConfig<T> {
   final SyncManager<T> manager;
   final SortConfig<T> sortConfig;
   Future Function(Dataset<T> state, SyncedState<T> obj)? initializeCallback;
+  final void Function(History history)? onHistoryUpdate;
   final Completer<void> completer;
 
   SyncConfig({
@@ -17,6 +19,7 @@ class SyncConfig<T> {
     required this.manager,
     this.sortConfig = const SortConfig(),
     this.initializeCallback,
+    this.onHistoryUpdate,
   }) : completer = Completer<void>();
 
   @override

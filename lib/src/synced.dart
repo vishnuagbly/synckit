@@ -27,11 +27,11 @@ separate object, which stores data in sorted manner, with log n complexities */
 mixin SyncedState<T> {
   late SyncConfig<T> _params;
   final List<StreamSubscription<Dataset<T>>> _subscriptions = [];
-  final _history = History();
+  History _history = const History();
 
   Dataset<T> get state;
 
-  History get history => _history.copyWith();
+  History get history => _history;
 
   set state(Dataset<T> value);
 
@@ -62,7 +62,7 @@ mixin SyncedState<T> {
     try {
       final data = await _params.manager.fetchAndSyncFromNetwork;
       _setState(data);
-      _history.updateLastSyncWithNetworkFetchTime();
+      _updateHistory(_history.updateLastSyncWithNetworkFetchTime());
     } catch (err) {
       log('err: $err', name: 'SyncObjNotifier');
     }
@@ -77,7 +77,7 @@ mixin SyncedState<T> {
   StreamSubscription<Dataset<T>> keepAllInSync() {
     return _addSubscription(_params.manager.listenAllFromNetwork((data) {
       _setState(data);
-      _history.updateLastSyncWithNetworkFetchTime();
+      _updateHistory(_history.updateLastSyncWithNetworkFetchTime());
     }));
   }
 
@@ -92,7 +92,7 @@ mixin SyncedState<T> {
       maxGetAllDocs: maxGetAllDocs,
       onData: (data) {
         _updateStateWithDataset(data);
-        _history.updateLastSyncWithNetworkFetchTime();
+        _updateHistory(_history.updateLastSyncWithNetworkFetchTime());
       },
     ));
   }
@@ -117,8 +117,13 @@ mixin SyncedState<T> {
     final data =
         await _params.manager.getQueryFromNetwork(queryFn, maxGetAllDocs);
     _updateStateWithDataset(data);
-    _history.updateLastSyncWithNetworkFetchTime();
+    _updateHistory(_history.updateLastSyncWithNetworkFetchTime());
     return data;
+  }
+
+  void _updateHistory(History history) {
+    _history = history;
+    _params.onHistoryUpdate?.call(_history);
   }
 
   void _setState(Dataset<T> state) {

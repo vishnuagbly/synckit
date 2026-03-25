@@ -1,10 +1,10 @@
 class History {
-  DateTime? lastSyncWithNetworkFetchTime;
+  final DateTime? lastSyncWithNetworkFetchTime;
 
-  History({this.lastSyncWithNetworkFetchTime});
+  const History({this.lastSyncWithNetworkFetchTime});
 
-  void updateLastSyncWithNetworkFetchTime() {
-    lastSyncWithNetworkFetchTime = DateTime.now();
+  History updateLastSyncWithNetworkFetchTime() {
+    return copyWith(lastSyncWithNetworkFetchTime: DateTime.now());
   }
 
   History copyWith({DateTime? lastSyncWithNetworkFetchTime}) {
@@ -13,4 +13,19 @@ class History {
           lastSyncWithNetworkFetchTime ?? this.lastSyncWithNetworkFetchTime,
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        other is History &&
+            other.lastSyncWithNetworkFetchTime ==
+                lastSyncWithNetworkFetchTime;
+  }
+
+  @override
+  int get hashCode => lastSyncWithNetworkFetchTime.hashCode;
+
+  @override
+  String toString() =>
+      'History(lastSyncWithNetworkFetchTime: $lastSyncWithNetworkFetchTime)';
 }

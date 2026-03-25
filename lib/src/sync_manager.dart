@@ -9,7 +9,7 @@ import 'objects/std_obj.dart';
 import 'utils.dart';
 
 class SyncManager<T> {
-  final _history = History();
+  History _history = const History();
   final StdObjParams<T> stdObjParams;
   final LocalStorage<T> storage;
   final NetworkStorage<T> network;
@@ -18,17 +18,21 @@ class SyncManager<T> {
   /// will be replaced with this data.
   final bool syncLocalWithNetworkOnFetch;
 
+  final void Function(History history)? onHistoryUpdate;
+
   factory SyncManager.fromStdObj({
     required FromJson<T> fromJson,
     required LocalStorage<T> storage,
     required NetworkStorage<T> network,
     bool syncLocalWithNetworkOnFetch = true,
+    void Function(History history)? onHistoryUpdate,
   }) =>
       SyncManager(
         stdObjParams: StdObjParams(fromJson: fromJson),
         storage: storage,
         network: network,
         syncLocalWithNetworkOnFetch: syncLocalWithNetworkOnFetch,
+        onHistoryUpdate: onHistoryUpdate,
       );
 
   SyncManager({
@@ -36,9 +40,15 @@ class SyncManager<T> {
     required this.storage,
     required this.network,
     this.syncLocalWithNetworkOnFetch = true,
+    this.onHistoryUpdate,
   });
 
-  History get history => _history.copyWith();
+  History get history => _history;
+
+  void _updateHistory(History history) {
+    _history = history;
+    onHistoryUpdate?.call(_history);
+  }
 
   Dataset<T> get allFromStorage => storage.getAll(stdObjParams);
 
@@ -50,7 +60,7 @@ class SyncManager<T> {
     if (syncLocalWithNetworkOnFetch) {
       await storage.clear();
       await storage.update(res, stdObjParams);
-      _history.lastSyncWithNetworkFetchTime = DateTime.now();
+      _updateHistory(_history.updateLastSyncWithNetworkFetchTime());
     }
 
     return res;
@@ -73,7 +83,7 @@ class SyncManager<T> {
       if (syncLocalWithNetworkOnFetch) {
         await storage.clear();
         await storage.update(res, stdObjParams);
-        _history.lastSyncWithNetworkFetchTime = DateTime.now();
+        _updateHistory(_history.updateLastSyncWithNetworkFetchTime());
       }
       onData?.call(res);
     });
@@ -90,7 +100,7 @@ class SyncManager<T> {
     return stream.listen((res) async {
       if (syncLocalWithNetworkOnFetch) {
         await storage.update(res, stdObjParams);
-        _history.lastSyncWithNetworkFetchTime = DateTime.now();
+        _updateHistory(_history.updateLastSyncWithNetworkFetchTime());
       }
       onData?.call(res);
     });
@@ -102,7 +112,7 @@ class SyncManager<T> {
 
     if (syncLocalWithNetworkOnFetch) {
       await storage.update(res, stdObjParams);
-      _history.lastSyncWithNetworkFetchTime = DateTime.now();
+      _updateHistory(_history.updateLastSyncWithNetworkFetchTime());
     }
     return res;
   }
