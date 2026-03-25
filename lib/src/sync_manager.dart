@@ -4,10 +4,12 @@ import 'package:synckit/src/objects/batch.dart';
 
 import 'local_storage.dart';
 import 'network_storage.dart';
+import 'objects/history.dart';
 import 'objects/std_obj.dart';
 import 'utils.dart';
 
 class SyncManager<T> {
+  final _history = History();
   final StdObjParams<T> stdObjParams;
   final LocalStorage<T> storage;
   final NetworkStorage<T> network;
@@ -29,12 +31,14 @@ class SyncManager<T> {
         syncLocalWithNetworkOnFetch: syncLocalWithNetworkOnFetch,
       );
 
-  const SyncManager({
+  SyncManager({
     required this.stdObjParams,
     required this.storage,
     required this.network,
     this.syncLocalWithNetworkOnFetch = true,
   });
+
+  History get history => _history.copyWith();
 
   Dataset<T> get allFromStorage => storage.getAll(stdObjParams);
 
@@ -46,6 +50,7 @@ class SyncManager<T> {
     if (syncLocalWithNetworkOnFetch) {
       await storage.clear();
       await storage.update(res, stdObjParams);
+      _history.lastSyncWithNetworkFetchTime = DateTime.now();
     }
 
     return res;
@@ -68,6 +73,7 @@ class SyncManager<T> {
       if (syncLocalWithNetworkOnFetch) {
         await storage.clear();
         await storage.update(res, stdObjParams);
+        _history.lastSyncWithNetworkFetchTime = DateTime.now();
       }
       onData?.call(res);
     });
@@ -84,6 +90,7 @@ class SyncManager<T> {
     return stream.listen((res) async {
       if (syncLocalWithNetworkOnFetch) {
         await storage.update(res, stdObjParams);
+        _history.lastSyncWithNetworkFetchTime = DateTime.now();
       }
       onData?.call(res);
     });
@@ -95,6 +102,7 @@ class SyncManager<T> {
 
     if (syncLocalWithNetworkOnFetch) {
       await storage.update(res, stdObjParams);
+      _history.lastSyncWithNetworkFetchTime = DateTime.now();
     }
     return res;
   }

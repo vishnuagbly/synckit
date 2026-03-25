@@ -1,3 +1,9 @@
+## 0.3.12
+### New Features
+- **[History]**: Added a new `History` object with `lastSyncWithNetworkFetchTime` and `updateLastSyncWithNetworkFetchTime()` to track the latest successful network fetch sync time.
+- **[SyncManager]**: Added `history` to track `lastSyncWithNetworkFetchTime` whenever network fetch/listen/query operations sync data to local storage.
+- **[SyncedState]**: Added `history` updates in `refresh`, `keepAllInSync`, `keepQueryInSync`, and `getQueryFromNetwork` after network data is applied to state.
+
 ## 0.3.11+1
 - **[NetworkStorage]**: Fixed a bug in `writeRules` where on executing `writeRuels` it was throwing error, instead now it will only log.
 
