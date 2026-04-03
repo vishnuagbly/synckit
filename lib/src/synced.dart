@@ -3,7 +3,6 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
-import 'package:flutter/services.dart';
 import 'package:synckit/src/utils.dart';
 
 import 'objects/batch.dart';
@@ -116,8 +115,8 @@ mixin SyncedState<T> {
     int? maxGetAllDocs,
     GetOptions? getOptions,
   }) async {
-    final data =
-        await _params.manager.getQueryFromNetwork(queryFn, maxGetAllDocs, getOptions);
+    final data = await _params.manager
+        .getQueryFromNetwork(queryFn, maxGetAllDocs, getOptions);
     _updateStateWithDataset(data);
     _updateHistory(_history.updateLastSyncWithNetworkFetchTime());
     return data;
@@ -155,7 +154,6 @@ mixin SyncedState<T> {
       removeAll([id], stateOnly: stateOnly);
 
   Future<void> removeAll(Iterable<String> ids, {bool stateOnly = false}) async {
-    _assertIdsExists(ids);
     if (!stateOnly) {
       await _params.manager.remove(_idsDatasetFromState(ids));
     }
@@ -163,20 +161,8 @@ mixin SyncedState<T> {
   }
 
   void batchRemoveAll(Iterable<String> ids, SyncBatch batch) {
-    _assertIdsExists(ids);
     _params.manager.batchRemove(_idsDatasetFromState(ids), batch);
     _removeStateIds(ids);
-  }
-
-  void _assertIdsExists(Iterable<String> ids) {
-    for (final id in ids) {
-      if (!state.containsKey(id)) {
-        throw PlatformException(
-          code: 'ID_NOT_FOUND',
-          message: 'ID $id not found in the current state.',
-        );
-      }
-    }
   }
 
   Dataset<T> _idsDatasetFromState(Iterable<String> ids) {

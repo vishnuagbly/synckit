@@ -1,3 +1,7 @@
+## 0.3.17
+
+- **[SyncedState]** Removed `_assertIdsExists` check on all types of `remove` methods. 
+
 ## 0.3.16
 
 ### Improvements
