@@ -1,3 +1,9 @@
+## 0.4.1
+
+### Bug Fixes
+- **[NetworkStorage]**: Fixed `streamDeletedDocsData` and `getDeletedDocsData` to properly compute the deleted docs path using `getDeletedDocsPath()` for collection-based storage support.
+
+
 ## 0.4.0
 
 ### New Features

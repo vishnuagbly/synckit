@@ -101,7 +101,8 @@ class NetworkStorage<T> {
   }
 
   Stream<DeleteDocData> streamDeletedDocsData([String? docPath]) {
-    final deleteDocRef = FirebaseFirestore.instance.doc(docPath ?? path);
+    final path = getDeletedDocsPath(collectionBased, docPath ?? this.path);
+    final deleteDocRef = FirebaseFirestore.instance.doc(path);
     return deleteDocRef.snapshots().map((snapshot) =>
         snapshot.data()?.map((key, value) => MapEntry(key, value as int)) ??
         <String, int>{});
@@ -179,7 +180,8 @@ class NetworkStorage<T> {
   }
 
   Future<DeleteDocData> getDeletedDocsData([String? docPath]) async {
-    final deleteDocRef = FirebaseFirestore.instance.doc(docPath ?? path);
+    final path = getDeletedDocsPath(collectionBased, docPath ?? this.path);
+    final deleteDocRef = FirebaseFirestore.instance.doc(path);
     return deleteDocRef.get().then((snapshot) =>
         snapshot.data()?.map((key, value) => MapEntry(key, value as int)) ??
         <String, int>{});
