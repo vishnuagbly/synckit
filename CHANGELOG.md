@@ -1,3 +1,10 @@
+## 0.3.18
+
+### Improvements
+- **[SyncBatch]**: Replaced `Completer<void>` with callback-based approach. Added `asyncCallbacks` and `syncCallbacks` lists with `addAsyncCallback()` and `addSyncCallback()` methods for more flexible post-commit operations.
+- **[SyncManager]**: `batchUpdate`, `batchRemove`, and `batchClear` now execute local storage operations as async callbacks within the batch commit process. When you `await` the batch commit, it will only complete successfully after all local storage operations have finished; if any of these operations fail, the commit will fail as well.
+- **[SyncedState]**: `batchRemoveAll`, `batchUpdate`, and `batchClear` now schedule state updates via sync callbacks, so that batch commit only returns after successful completion of state update operations as well.
+
 ## 0.3.17
 
 - **[SyncedState]** Removed `_assertIdsExists` check on all types of `remove` methods. 

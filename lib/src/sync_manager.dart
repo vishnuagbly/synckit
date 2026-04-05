@@ -135,8 +135,7 @@ class SyncManager<T> {
     * also we are using "Network" as the source of truth. */
 
     network.writeBatchUpdate(syncBatch.batch, data, stdObjParams);
-    await syncBatch.completer.future;
-    await storage.update(data, stdObjParams);
+    syncBatch.addAsyncCallback(() => storage.update(data, stdObjParams));
   }
 
   Future<void> remove(Dataset<T> data) async {
@@ -153,8 +152,7 @@ class SyncManager<T> {
     * also we are using "Network" as the source of truth. */
 
     network.writeBatchDelete(syncBatch.batch, data, stdObjParams);
-    await syncBatch.completer.future;
-    await storage.delete(data, stdObjParams);
+    syncBatch.addAsyncCallback(() => storage.delete(data, stdObjParams));
   }
 
   Future<void> batchClear(SyncBatch syncBatch) async {
@@ -163,8 +161,7 @@ class SyncManager<T> {
     * also we are using "Network" as the source of truth. */
 
     await network.writeBatchClear(syncBatch.batch);
-    await syncBatch.completer.future;
-    await storage.clear();
+    syncBatch.addAsyncCallback(() => storage.clear());
   }
 
   Future<void> clear() async {

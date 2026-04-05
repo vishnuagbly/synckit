@@ -162,7 +162,7 @@ mixin SyncedState<T> {
 
   void batchRemoveAll(Iterable<String> ids, SyncBatch batch) {
     _params.manager.batchRemove(_idsDatasetFromState(ids), batch);
-    _removeStateIds(ids);
+    batch.addSyncCallback(() => _removeStateIds(ids));
   }
 
   Dataset<T> _idsDatasetFromState(Iterable<String> ids) {
@@ -190,7 +190,7 @@ mixin SyncedState<T> {
   void batchUpdate(T value, SyncBatch batch) async {
     final data = _toDataset(value);
     await _params.manager.batchUpdate(data, batch);
-    _updateStateWithValue(value);
+    batch.addSyncCallback(() => _updateStateWithValue(value));
   }
 
   Dataset<T> _toDataset(T value) {
@@ -234,6 +234,6 @@ mixin SyncedState<T> {
   /// NOTE: Make sure to call `batch.commit()` after calling this method.
   Future<void> batchClear(SyncBatch batch) async {
     await _params.manager.batchClear(batch);
-    state = Dataset<T>();
+    batch.addSyncCallback(() => state = Dataset<T>());
   }
 }
