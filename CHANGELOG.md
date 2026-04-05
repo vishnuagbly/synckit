@@ -1,3 +1,8 @@
+## 0.4.2
+
+### Bug Fixes
+- **[NetworkStorage]**: Fixed `_writeBatchDelete` to call `_writeBatchDeleteDoc` before processing collection-based or document-based delete operations, ensuring its called for both flows.
+
 ## 0.4.1
 
 ### Bug Fixes

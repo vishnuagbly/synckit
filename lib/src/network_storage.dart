@@ -349,6 +349,8 @@ class NetworkStorage<T> {
       [String? docPath]) {
     if (disabled) return;
 
+    _writeBatchDeleteDoc(batch, data, docPath);
+
     if (collectionBased) {
       final colRef = FirebaseFirestore.instance.collection(docPath ?? path);
       for (final id in data.keys) {
@@ -359,7 +361,6 @@ class NetworkStorage<T> {
 
     final (docRef, deleteData) = _getDeleteParams(data, params, docPath);
     batch.update(docRef, deleteData);
-    _writeBatchDeleteDoc(batch, data, docPath);
   }
 
   (DocumentReference<Map<String, dynamic>>, Map<String, FieldValue>)
