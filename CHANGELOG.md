@@ -1,3 +1,7 @@
+## 0.4.3
+### Bug Fixes
+- **[NetworkStorage]**: Updates in `collectionMode` were using "merge: true" which caused issues with array/map member delete operations. Updated to use "merge: false" for collection-based updates to ensure proper overwriting of documents and correct handling of deletes.
+
 ## 0.4.2
 
 ### Bug Fixes

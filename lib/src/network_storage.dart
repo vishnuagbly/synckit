@@ -240,8 +240,7 @@ class NetworkStorage<T> {
       final colRef = FirebaseFirestore.instance.collection(docPath ?? path);
       for (final entry in data.entries) {
         final docRef = colRef.doc(entry.key);
-        transaction.set(
-            docRef, params.toJson(entry.value), SetOptions(merge: true));
+        transaction.set(docRef, params.toJson(entry.value));
       }
       return transaction;
     }
@@ -262,7 +261,7 @@ class NetworkStorage<T> {
       final colRef = FirebaseFirestore.instance.collection(docPath ?? path);
       for (final entry in data.entries) {
         final docRef = colRef.doc(entry.key);
-        batch.set(docRef, params.toJson(entry.value), SetOptions(merge: true));
+        batch.set(docRef, params.toJson(entry.value));
       }
       return;
     }
