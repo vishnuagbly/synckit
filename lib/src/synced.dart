@@ -26,7 +26,6 @@ separate object, which stores data in sorted manner, with log n complexities */
 /// ```
 mixin SyncedState<T> {
   late SyncConfig<T> _params;
-  final List<StreamSubscription<Dataset<T>>> _subscriptions = [];
   History _history = const History();
 
   Dataset<T> get state;
@@ -77,10 +76,10 @@ mixin SyncedState<T> {
   /// Note:- You can also simply call [dispose] method to cancel all the active
   /// subscriptions at once.
   StreamSubscription<Dataset<T>> keepAllInSync() {
-    return _addSubscription(_params.manager.listenAllFromNetwork((data) {
+    return _params.manager.listenAllFromNetwork((data) {
       _setOrUpdateState(data);
       _updateHistory(_history.updateLastSyncWithNetworkFetchTime());
-    }));
+    });
   }
 
   /// Make sure to cancel the returned subscription in `dispose` method to avoid
@@ -89,27 +88,24 @@ mixin SyncedState<T> {
   /// subscriptions at once.
   StreamSubscription<Dataset<T>> keepQueryInSync(QueryFn<T> queryFn,
       {int? maxGetAllDocs}) {
-    return _addSubscription(_params.manager.listenQueryFromNetwork(
+    return _params.manager.listenQueryFromNetwork(
       queryFn,
       maxGetAllDocs: maxGetAllDocs,
       onData: (data) {
         _updateStateWithDataset(data);
         _updateHistory(_history.updateLastSyncWithNetworkFetchTime());
       },
-    ));
-  }
-
-  StreamSubscription<Dataset<T>> _addSubscription(
-      StreamSubscription<Dataset<T>> subscription) {
-    _subscriptions.add(subscription);
-    return subscription;
+      onDeletedData: (deletedData) {
+        _removeStateIds(deletedData.keys);
+        _updateHistory(_history.updateLastSyncWithNetworkFetchTime());
+      },
+    );
   }
 
   /// Call this method in the `dispose` method of the notifier to cancel all the
   /// active subscriptions at once and avoid memory leaks.
   Future<void> dispose() async {
-    await Future.wait(_subscriptions.map((sub) => sub.cancel()));
-    _subscriptions.clear();
+    await _params.manager.dispose();
   }
 
   Future<Dataset<T>> getQueryFromNetwork(
@@ -118,7 +114,9 @@ mixin SyncedState<T> {
     GetOptions? getOptions,
   }) async {
     final data = await _params.manager
-        .getQueryFromNetwork(queryFn, maxGetAllDocs, getOptions);
+        .getQueryFromNetwork(queryFn, maxGetAllDocs, getOptions, (data) {
+      _removeStateIds(data.keys);
+    });
     _updateStateWithDataset(data);
     _updateHistory(_history.updateLastSyncWithNetworkFetchTime());
     return data;

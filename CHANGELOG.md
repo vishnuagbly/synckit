@@ -1,3 +1,30 @@
+## 0.4.0
+
+### New Features
+
+#### "Deleted Docs" Tracking & Sync
+Added a system to track document deletions and synchronize them across network and local storage, ensuring that deletes on one client are propagated to others.
+
+- **[Utils]**: Added `DeleteDocData` type alias (`Map<String, int>`) for representing deleted document metadata (ID → deletion timestamp).
+
+- **[NetworkStorage]**: Added `getDeletedDocsPath(bool collectionBased, String path)` static method to compute the Firestore path for storing deleted docs metadata.
+- **[NetworkStorage]**: Added `streamDeletedDocsData([String? docPath])` to stream deleted docs data in real-time.
+- **[NetworkStorage]**: Added `getDeletedDocsData([String? docPath])` to fetch deleted docs data.
+- **[NetworkStorage]**: Added `transactionDeleteDoc(Transaction, Dataset<T>, [String? docPath])` to write deleted doc metadata within a Firestore transaction.
+- **[NetworkStorage]**: `delete`, `transactionDelete`, and `writeBatchDelete` now also record deletion metadata to a separate deleted-docs document, enabling cross-client deletion sync.
+
+- **[LocalStorage]**: Added `deleteFromIds(Iterable<String> ids)` method to delete entries by IDs directly, without requiring a full `Dataset`.
+
+- **[SyncManager]**: Added `syncDeletedDocs` parameter (default: `false`) to opt-in to fetching and syncing deleted docs data from the network.
+- **[SyncManager]**: Added `dispose()` method to cancel all active stream subscriptions and prevent memory leaks. Subscription management has been moved here from `SyncedState`.
+- **[SyncManager]**: `fetchAndSyncFromNetwork` now also fetches deleted docs data and removes those entries from local storage.
+- **[SyncManager]**: `listenQueryFromNetwork` now accepts an `onDeletedData` callback; when `syncDeletedDocs` is enabled, it also listens to the deleted docs stream.
+- **[SyncManager]**: `getQueryFromNetwork` now accepts an `onDeletedData` callback; when `syncDeletedDocs` is enabled, it also fetches deleted docs data.
+
+- **[SyncedState]**: `keepQueryInSync` now handles deleted docs by removing their IDs from state.
+- **[SyncedState]**: `getQueryFromNetwork` now handles deleted docs by removing their IDs from state.
+- **[SyncedState]**: `dispose()` now delegates to `SyncManager.dispose()`, centralizing subscription management.
+
 ## 0.3.19
 - **[SyncedState]**: Added a new optional parameter on `refresh`, i.e `throwError`, allowing users to catch errors, in-case any part of the refresh fails. 
 

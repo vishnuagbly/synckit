@@ -43,6 +43,9 @@ class NetworkStorage<T> {
   /// to the network.
   final Dataset<T> Function(Dataset<T> data)? writeRules;
 
+  static String getDeletedDocsPath(bool collectionBased, String path) =>
+      collectionBased ? '$path/deleted-docs' : '$path/extra/deleted-docs';
+
   const NetworkStorage.disabled()
       : path = '',
         disabled = true,
@@ -95,6 +98,13 @@ class NetworkStorage<T> {
     return _genColRef(params, query, maxGetAllDocs)
         .snapshots()
         .map(_querySnapshotToDataset);
+  }
+
+  Stream<DeleteDocData> streamDeletedDocsData([String? docPath]) {
+    final deleteDocRef = FirebaseFirestore.instance.doc(docPath ?? path);
+    return deleteDocRef.snapshots().map((snapshot) =>
+        snapshot.data()?.map((key, value) => MapEntry(key, value as int)) ??
+        <String, int>{});
   }
 
   Future<IMap<String, T>> getAll(StdObjParams<T> params,
@@ -166,6 +176,13 @@ class NetworkStorage<T> {
       }
       rethrow;
     }
+  }
+
+  Future<DeleteDocData> getDeletedDocsData([String? docPath]) async {
+    final deleteDocRef = FirebaseFirestore.instance.doc(docPath ?? path);
+    return deleteDocRef.get().then((snapshot) =>
+        snapshot.data()?.map((key, value) => MapEntry(key, value as int)) ??
+        <String, int>{});
   }
 
   Query<T> _genColRef(StdObjParams<T> params,
@@ -293,21 +310,25 @@ class NetworkStorage<T> {
   Future<void> delete(Dataset<T> data, StdObjParams<T> params,
       [String? docPath]) async {
     if (disabled) return;
+    final batch = FirebaseFirestore.instance.batch();
 
     if (collectionBased) {
-      final batch = FirebaseFirestore.instance.batch();
       writeBatchDelete(batch, data, params, docPath);
       return batch.commit();
     }
 
     final (docRef, deleteData) = _getDeleteParams(data, params, docPath);
-    return docRef.update(deleteData);
+    batch.update(docRef, deleteData);
+    _writeBatchDeleteDoc(batch, data, docPath);
+    return batch.commit();
   }
 
   Transaction transactionDelete(
       Transaction transaction, Dataset<T> data, StdObjParams<T> params,
       [String? docPath]) {
     if (disabled) return transaction;
+
+    transaction = transactionDeleteDoc(transaction, data, docPath);
 
     if (collectionBased) {
       final colRef = FirebaseFirestore.instance.collection(docPath ?? path);
@@ -336,6 +357,7 @@ class NetworkStorage<T> {
 
     final (docRef, deleteData) = _getDeleteParams(data, params, docPath);
     batch.update(docRef, deleteData);
+    _writeBatchDeleteDoc(batch, data, docPath);
   }
 
   (DocumentReference<Map<String, dynamic>>, Map<String, FieldValue>)
@@ -349,6 +371,29 @@ class NetworkStorage<T> {
       for (final id in ids) id: FieldValue.delete(),
     };
     return (docRef, deleteData);
+  }
+
+  void _writeBatchDeleteDoc(WriteBatch batch, Dataset<T> data,
+      [String? docPath]) {
+    if (disabled) return;
+
+    final deleteDocRef = FirebaseFirestore.instance
+        .doc(getDeletedDocsPath(collectionBased, docPath ?? path));
+
+    final deleteDocData = _genDeleteDocData(data);
+    batch.set(deleteDocRef, deleteDocData);
+  }
+
+  Transaction transactionDeleteDoc(Transaction transaction, Dataset<T> data,
+      [String? docPath]) {
+    if (disabled) return transaction;
+
+    final deleteDocRef = FirebaseFirestore.instance
+        .doc(getDeletedDocsPath(collectionBased, docPath ?? path));
+
+    final deleteDocData = _genDeleteDocData(data);
+    transaction.update(deleteDocRef, deleteDocData);
+    return transaction;
   }
 
   Future<void> clear([String? docPath]) async {
@@ -393,6 +438,13 @@ class NetworkStorage<T> {
 
     final docRef = FirebaseFirestore.instance.doc(path ?? this.path);
     batch.delete(docRef);
+  }
+
+  DeleteDocData _genDeleteDocData(Dataset<T> data) {
+    return data
+        .map((key, value) =>
+            MapEntry(key, DateTime.now().millisecondsSinceEpoch))
+        .unlock;
   }
 
   void _assertDisabled() {

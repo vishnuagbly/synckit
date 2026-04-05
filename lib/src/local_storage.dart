@@ -49,7 +49,11 @@ class LocalStorage<T> {
 
   Future<void> delete(Dataset<T> data, StdObjParams<T> params) async {
     if (disabled) return;
-    final ids = data.keys;
+    return deleteFromIds(data.keys);
+  }
+
+  Future<void> deleteFromIds(Iterable<String> ids) async {
+    if (disabled) return;
     List<Future<void>> futures = [];
     for (final id in ids) {
       futures.add(box.delete(id));

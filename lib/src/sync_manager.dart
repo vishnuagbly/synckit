@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:synckit/src/objects/batch.dart';
 
 import 'local_storage.dart';
@@ -19,13 +20,22 @@ class SyncManager<T> {
   /// will be replaced with this data.
   final bool syncLocalWithNetworkOnFetch;
 
+  /// If true, deleted docs data will also be fetched from the network and local
+  /// storage will be updated accordingly.
+  ///
+  /// Note:- For this [syncLocalWithNetworkOnFetch] must be true.
+  final bool syncDeletedDocs;
+
   final void Function(History history)? onHistoryUpdate;
+
+  final List<StreamSubscription> _subscriptions = [];
 
   factory SyncManager.fromStdObj({
     required FromJson<T> fromJson,
     required LocalStorage<T> storage,
     required NetworkStorage<T> network,
     bool syncLocalWithNetworkOnFetch = true,
+    bool syncDeletedDocs = false,
     void Function(History history)? onHistoryUpdate,
   }) =>
       SyncManager(
@@ -33,6 +43,7 @@ class SyncManager<T> {
         storage: storage,
         network: network,
         syncLocalWithNetworkOnFetch: syncLocalWithNetworkOnFetch,
+        syncDeletedDocs: syncDeletedDocs,
         onHistoryUpdate: onHistoryUpdate,
       );
 
@@ -41,6 +52,7 @@ class SyncManager<T> {
     required this.storage,
     required this.network,
     this.syncLocalWithNetworkOnFetch = true,
+    this.syncDeletedDocs = false,
     this.onHistoryUpdate,
   });
 
@@ -57,12 +69,14 @@ class SyncManager<T> {
 
   Future<Dataset<T>> get fetchAndSyncFromNetwork async {
     final res = await allFromNetwork;
+    final deletedDocs = await network.getDeletedDocsData();
 
     if (syncLocalWithNetworkOnFetch) {
       if (!network.collectionBased) {
         await storage.clear();
       }
       await storage.update(res, stdObjParams);
+      await storage.deleteFromIds(deletedDocs.keys);
       _updateHistory(_history.updateLastSyncWithNetworkFetchTime());
     }
 
@@ -82,14 +96,14 @@ class SyncManager<T> {
   StreamSubscription<Dataset<T>> listenAllFromNetwork(
       [Function(Dataset<T>)? onData]) {
     final stream = network.streamAll(stdObjParams);
-    return stream.listen((res) async {
+    return _addSubscription(stream.listen((res) async {
       if (syncLocalWithNetworkOnFetch) {
         await storage.clear();
         await storage.update(res, stdObjParams);
         _updateHistory(_history.updateLastSyncWithNetworkFetchTime());
       }
       onData?.call(res);
-    });
+    }));
   }
 
   /// This will keep local storage in sync with the network whenever there is a
@@ -98,27 +112,65 @@ class SyncManager<T> {
   /// well.
   /// [onData] will be called always.
   StreamSubscription<Dataset<T>> listenQueryFromNetwork(QueryFn<T> queryFn,
-      {int? maxGetAllDocs, Function(Dataset<T>)? onData}) {
+      {int? maxGetAllDocs,
+      Function(Dataset<T>)? onData,
+      Function(DeleteDocData)? onDeletedData}) {
     final stream = network.streamQuery(stdObjParams, queryFn, maxGetAllDocs);
-    return stream.listen((res) async {
+    if (syncDeletedDocs) {
+      final deletedDocStream = network.streamDeletedDocsData();
+      _addSubscription(deletedDocStream.listen((deletedDocs) async {
+        if (syncLocalWithNetworkOnFetch) {
+          await storage.deleteFromIds(deletedDocs.keys);
+          _updateHistory(_history.updateLastSyncWithNetworkFetchTime());
+        }
+        onDeletedData?.call(deletedDocs);
+      }));
+    }
+
+    return _addSubscription(stream.listen((res) async {
       if (syncLocalWithNetworkOnFetch) {
         await storage.update(res, stdObjParams);
         _updateHistory(_history.updateLastSyncWithNetworkFetchTime());
       }
       onData?.call(res);
-    });
+    }));
+  }
+
+  StreamSubscription<K> _addSubscription<K>(
+      StreamSubscription<K> subscription) {
+    _subscriptions.add(subscription);
+    return subscription;
+  }
+
+  /// Call this method in the `dispose` method of the notifier to cancel all the
+  /// active subscriptions at once and avoid memory leaks.
+  Future<void> dispose() async {
+    await Future.wait(_subscriptions.map((sub) => sub.cancel()));
+    _subscriptions.clear();
   }
 
   Future<Dataset<T>> getQueryFromNetwork(QueryFn<T> queryFn,
-      [int? maxGetAllDocs, GetOptions? getOptions]) async {
-    final res = await network.getQuery(
-        stdObjParams, queryFn, maxGetAllDocs, getOptions);
+      [int? maxGetAllDocs,
+      GetOptions? getOptions,
+      Function(DeleteDocData)? onDeletedData]) async {
+    final res = await Future.wait([
+      network.getQuery(stdObjParams, queryFn, maxGetAllDocs, getOptions),
+      if (syncDeletedDocs) network.getDeletedDocsData(),
+    ]);
+
+    final data = res[0] as Dataset<T>;
+
+    DeleteDocData deletedDocs = (res.getOrNull(1) as DeleteDocData?) ?? {};
 
     if (syncLocalWithNetworkOnFetch) {
-      await storage.update(res, stdObjParams);
+      await Future.wait([
+        storage.update(data, stdObjParams),
+        storage.deleteFromIds(deletedDocs.keys),
+      ]);
       _updateHistory(_history.updateLastSyncWithNetworkFetchTime());
     }
-    return res;
+    onDeletedData?.call(deletedDocs);
+    return data;
   }
 
   Future<void> update(Dataset<T> data) async {
