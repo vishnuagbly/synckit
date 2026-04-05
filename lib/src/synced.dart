@@ -50,12 +50,13 @@ mixin SyncedState<T> {
     _params.completer.complete();
   }
 
-  Future<void> refresh() async {
+  Future<void> refresh({bool throwError = false}) async {
     await _params.manager.initialize();
 
     try {
       _setState(_params.manager.allFromStorage);
     } catch (err) {
+      if (throwError) rethrow;
       log('err: $err', name: 'SyncObjNotifier');
     }
 
@@ -64,6 +65,7 @@ mixin SyncedState<T> {
       _setOrUpdateState(data);
       _updateHistory(_history.updateLastSyncWithNetworkFetchTime());
     } catch (err) {
+      if (throwError) rethrow;
       log('err: $err', name: 'SyncObjNotifier');
     }
   }

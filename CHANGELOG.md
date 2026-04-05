@@ -1,3 +1,6 @@
+## 0.3.19
+- **[SyncedState]**: Added a new optional parameter on `refresh`, i.e `throwError`, allowing users to catch errors, in-case any part of the refresh fails. 
+
 ## 0.3.18
 
 ### Improvements
