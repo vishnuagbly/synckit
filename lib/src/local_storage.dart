@@ -11,6 +11,20 @@ class LocalStorage<T> {
   final String boxName;
   final bool disabled;
   final Future<void> Function()? initializeCallback;
+  static bool _recording = true;
+  static final Map<String, LocalStorage> _instances = {};
+
+  static bool get recording => _recording;
+
+  static void enableRecording() {
+    _recording = true;
+    _instances.clear();
+  }
+
+  static void disableRecording() {
+    _recording = false;
+    _instances.clear();
+  }
 
   const LocalStorage.disabled()
       : boxName = '',
@@ -78,6 +92,7 @@ class LocalStorage<T> {
   Future<void> initialize() async {
     if (disabled) return;
     await _initialize(boxName);
+    if (_recording) _instances[boxName] = this;
     return initializeCallback?.call();
   }
 
@@ -91,5 +106,15 @@ class LocalStorage<T> {
 
   static bool _isInitialized(String boxName) {
     return Hive.isBoxOpen(boxName);
+  }
+
+  static Future<void> clearAll() {
+    List<Future<void>> futures = [];
+    for (final instance in _instances.values) {
+      if (!instance.disabled) {
+        futures.add(instance.clear());
+      }
+    }
+    return Future.wait(futures);
   }
 }

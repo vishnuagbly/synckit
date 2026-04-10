@@ -1,3 +1,13 @@
+## 0.4.4
+
+### New Features
+- **[LocalStorage]**: Added recording system to track active `LocalStorage` instances:
+  - `recording` static getter to check if recording is enabled (default: `true`)
+  - `enableRecording()` static method to enable recording and clear tracked instances
+  - `disableRecording()` static method to disable recording and clear tracked instances
+  - Instances are automatically tracked in an internal `_instances` map when recording is enabled
+- **[LocalStorage]**: Added `clearAll()` static method to clear all tracked `LocalStorage` instances in a single operation
+
 ## 0.4.3
 ### Bug Fixes
 - **[NetworkStorage]**: Updates in `collectionMode` were using "merge: true" which caused issues with array/map member delete operations. Updated to use "merge: false" for collection-based updates to ensure proper overwriting of documents and correct handling of deletes.
