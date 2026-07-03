@@ -102,6 +102,13 @@ class LocalStorage<T> {
     await Hive.openBox<String>(boxName);
   }
 
+  static Future<void> close() => Hive.close();
+
+  Future<void> reInitialize() async {
+    await close();
+    await initialize();
+  }
+
   bool get isInitialized => disabled || _isInitialized(boxName);
 
   static bool _isInitialized(String boxName) {

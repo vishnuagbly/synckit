@@ -1,3 +1,10 @@
+## 0.4.5
+
+### New Features
+- **[LocalStorage]**: Added two new methods for initialization management:
+  - `close()` static method to close the open box of the local storage.
+  - `reInitialize()` instance method to close and re-initialize the storage
+
 ## 0.4.4
 
 ### New Features
