@@ -102,7 +102,7 @@ class LocalStorage<T> {
     await Hive.openBox<String>(boxName);
   }
 
-  static Future<void> close() => Hive.close();
+  Future<void> close() => Hive.box<String>(boxName).close();
 
   Future<void> reInitialize() async {
     await close();

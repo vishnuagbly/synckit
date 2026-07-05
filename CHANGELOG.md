@@ -1,3 +1,8 @@
+## 0.4.6
+
+### Breaking Changes
+- **[LocalStorage]**: Changed `close()` from a static method to an instance method. It now closes only this instance's own box (`Hive.box<String>(boxName).close()`) instead of closing all open Hive boxes (`Hive.close()`). This also makes `reInitialize()` only close and re-open its own box.
+
 ## 0.4.5
 
 ### New Features
