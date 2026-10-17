@@ -160,8 +160,10 @@ mixin SyncedState<T> {
     _removeStateIds(ids);
   }
 
-  void batchRemoveAll(Iterable<String> ids, SyncBatch batch) {
-    _params.manager.batchRemove(_idsDatasetFromState(ids), batch);
+  /// NOTE: Await this, then call [SyncBatch.commit]. The state callback is
+  /// registered only after the manager finishes queueing the delete.
+  Future<void> batchRemoveAll(Iterable<String> ids, SyncBatch batch) async {
+    await _params.manager.batchRemove(_idsDatasetFromState(ids), batch);
     batch.addSyncCallback(() => _removeStateIds(ids));
   }
 
@@ -186,8 +188,9 @@ mixin SyncedState<T> {
     _updateStateWithValue(value);
   }
 
-  /// NOTE: Make sure to call `batch.commit()` after calling this method.
-  void batchUpdate(T value, SyncBatch batch) async {
+  /// NOTE: Await this, then call [SyncBatch.commit]. The state callback is
+  /// registered only after the manager finishes queueing the write.
+  Future<void> batchUpdate(T value, SyncBatch batch) async {
     final data = _toDataset(value);
     await _params.manager.batchUpdate(data, batch);
     batch.addSyncCallback(() => _updateStateWithValue(value));
@@ -231,7 +234,7 @@ mixin SyncedState<T> {
     state = Dataset<T>();
   }
 
-  /// NOTE: Make sure to call `batch.commit()` after calling this method.
+  /// NOTE: Await this, then call [SyncBatch.commit].
   Future<void> batchClear(SyncBatch batch) async {
     await _params.manager.batchClear(batch);
     batch.addSyncCallback(() => state = Dataset<T>());

@@ -1,3 +1,8 @@
+## 0.4.7
+
+### Breaking Changes
+- **[SyncedState]**: `batchUpdate` and `batchRemoveAll` return `Future<void>`. Await them before `SyncBatch.commit()`. Call sites that ignore the return value still compile. A subclass that overrides either method must return `Future<void>`.
+
 ## 0.4.6
 
 ### Breaking Changes
