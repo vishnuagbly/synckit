@@ -1,6 +1,9 @@
 # Credentials
 credentials.json
 
+# Local implementation notes
+synckit-batch.md
+
 # Firebase secrets
 **/google-services.json
 **/GoogleService-Info.plist
